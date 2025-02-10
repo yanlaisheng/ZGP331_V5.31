@@ -1,0 +1,171 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: μVision V5.24.2.0
+Copyright (C) 2017 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: ZCL Microsoft, Microsoft, LIC=8MZ74-FJYL9-HPZZN-YV1FN-8LH24-H5CSI
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Professional  Version: 5.24.1
+Toolchain Path:  D:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 5 (build 528)
+Assembler:       Armasm.exe V5.06 update 5 (build 528)
+Linker/Locator:  ArmLink.exe V5.06 update 5 (build 528)
+Library Manager: ArmAr.exe V5.06 update 5 (build 528)
+Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
+CPU DLL:         SARMCM3.DLL V5.24.1
+Dialog DLL:      DCM.DLL V1.16.0.0
+Target DLL:      Segger\JL2CM3.dll V2.99.26.0
+Dialog DLL:      TCM.DLL V1.32.0.0
+ 
+<h2>Project:</h2>
+E:\DCM200_SCR_E\V2(HW)\02 DCM220+DCM100\20211126-V210-4 GD32 STM32 OK WaterMeter, 06 16 Command\Project\RVMDKv501\DCM200_SCR.uvprojx
+Project File Date:  11/26/2021
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 5 (build 528)', folder: 'D:\Keil_v5\ARM\ARMCC\Bin'
+Rebuild target 'DCM200_SCR'
+compiling stm32f10x_rcc.c...
+compiling system_stm32f10x.c...
+compiling stm32f10x_iwdg.c...
+compiling stm32f10x_gpio.c...
+compiling misc.c...
+compiling stm32f10x_flash.c...
+compiling stm32f10x_usart.c...
+assembling startup_stm32f10x_hd.s...
+compiling stm32f10x_dac.c...
+compiling stm32f10x_adc.c...
+compiling stm32f10x_exti.c...
+compiling stm32f10x_spi.c...
+compiling stm32f10x_dma.c...
+compiling stm32f10x_tim.c...
+compiling main.c...
+compiling com2_232.c...
+compiling com4_232.c...
+..\..\User\com4_232.c(198): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "const char *"
+  						if( strstr(Rcv4Buffer,",,,")==NULL )		// 正常数据的时候，搜不到,,,，返回值为0
+..\..\User\com4_232.c(206): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "const char *"
+  							if( strstr(Rcv4Buffer,",N,")!=NULL )
+..\..\User\com4_232.c(208): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "const char *"
+  								Gps_ptr=strstr(Rcv4Buffer,",N,");			//ZCL 2020.11.24 原先4位小数点
+..\..\User\com4_232.c(208): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "u8 *"
+  								Gps_ptr=strstr(Rcv4Buffer,",N,");			//ZCL 2020.11.24 原先4位小数点
+..\..\User\com4_232.c(234): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "const char *"
+  							if( strstr(Rcv4Buffer,",E,")!=NULL )
+..\..\User\com4_232.c(236): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "const char *"
+  								Gps_ptr=strstr(Rcv4Buffer,",E,");			//ZCL 2020.11.24 原先4位小数点
+..\..\User\com4_232.c(236): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "u8 *"
+  								Gps_ptr=strstr(Rcv4Buffer,",E,");			//ZCL 2020.11.24 原先4位小数点
+..\..\User\com4_232.c(154): warning:  #550-D: variable "v"  was set but never used
+  	u8 u=0,v=0,w=0;      
+..\..\User\com4_232.c(154): warning:  #550-D: variable "w"  was set but never used
+  	u8 u=0,v=0,w=0;      
+..\..\User\com4_232.c: 9 warnings, 0 errors
+compiling DoWith.c...
+compiling stm32f10x_it.c...
+compiling com1_232.c...
+compiling com3_232.c...
+..\..\User\com3_232.c(992): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  												ptr=strstr(Rcv3Buffer,",");
+..\..\User\com3_232.c(1019): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  											ptr=strstr(Rcv3Buffer,"+CREG:");
+..\..\User\com3_232.c(1044): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  												ptr=strstr(Rcv3Buffer,",");		//查找第一个',' 
+..\..\User\com3_232.c(1049): warning:  #167-D: argument of type "uchar *" is incompatible with parameter of type "const char *"
+  													ptr2=strstr(ptr+1,",");				//查找第二个','
+..\..\User\com3_232.c(1049): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  													ptr2=strstr(ptr+1,",");				//查找第二个','
+..\..\User\com3_232.c(1089): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  								ptr=strstr(Rcv3Buffer,"+RECEIVE: ")	;		
+..\..\User\com3_232.c(1118): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  									ptr2=strstr(Rcv3Buffer,"{");		//{的位置 =0x7B
+..\..\User\com3_232.c(1159): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  								else if( (ptr2=strstr(Rcv3Buffer,"CONNECT OK"))!=NULL )
+..\..\User\com3_232.c(1171): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  								else if( (ptr2=strstr(Rcv3Buffer,"CONNECT FAIL"))!=NULL )
+..\..\User\com3_232.c(1211): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  									ptr=strstr(Rcv3Buffer,",");
+..\..\User\com3_232.c(1226): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  									ptr2=strstr(Rcv3Buffer,"+86");
+..\..\User\com3_232.c(1307): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  							ptr3=strstr(Rcv3Buffer,"P:");		//P:的位置
+..\..\User\com3_232.c(924): warning:  #550-D: variable "i"  was set but never used
+  	u8 i=0;       						// 临时变量 k,s,
+..\..\User\com3_232.c(1738): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  			ptr=strstr(Rcv3Buffer,"{");
+..\..\User\com3_232.c(2694): warning:  #167-D: argument of type "uchar *" is incompatible with parameter of type "const char *"
+  		ptr=strstr(Rcv2Buffer,"GPW");		//通过PC串口调试软件可以设置GPRS参数
+..\..\User\com3_232.c(2694): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  		ptr=strstr(Rcv2Buffer,"GPW");		//通过PC串口调试软件可以设置GPRS参数
+..\..\User\com3_232.c(2696): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  		ptr=strstr(Rcv3Buffer,"GPW");
+..\..\User\com3_232.c(3167): warning:  #167-D: argument of type "uchar *" is incompatible with parameter of type "const char *"
+  		ptr=strstr(Rcv2Buffer,"GPR");		//通过PC串口调试软件可以设置GPRS参数
+..\..\User\com3_232.c(3167): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  		ptr=strstr(Rcv2Buffer,"GPR");		//通过PC串口调试软件可以设置GPRS参数
+..\..\User\com3_232.c(3169): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  		ptr=strstr(Rcv3Buffer,"GPR");
+..\..\User\com3_232.c: 20 warnings, 0 errors
+compiling spi_flash.c...
+compiling com_LoRa.c...
+compiling LCD.c...
+..\..\User\LCD.c(108): warning:  #223-D: function "IWDG_Feed" declared implicitly
+  		IWDG_Feed();			//ZCL 2021.10.25
+..\..\User\LCD.c: 1 warning, 0 errors
+compiling LcdGraphic.C...
+compiling Gprs_at.c...
+compiling xmodem.c...
+..\..\User\xmodem.c(159): warning:  #167-D: argument of type "const uchar *" is incompatible with parameter of type "const char *"
+  		u16 crc = Crc16_ccitt(buf, sz);
+..\..\User\xmodem.c(433): warning:  #167-D: argument of type "uchar *" is incompatible with parameter of type "const char *"
+  		ptr=strstr(ptr,")=");
+..\..\User\xmodem.c(433): warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "uchar *"
+  		ptr=strstr(ptr,")=");
+..\..\User\xmodem.c: 3 warnings, 0 errors
+compiling radio.c...
+compiling sx1232.c...
+compiling sx1272.c...
+compiling Key_Menu.c...
+..\..\User\Key_Menu.c(8221): warning:  #167-D: argument of type "u8 *" is incompatible with parameter of type "const char *"
+  		DispMod_Par2_String(0x92,&GprsPar[
+tuNoBase] );
+..\..\User\Key_Menu.c: 1 warning, 0 errors
+compiling sx1272-Fsk.c...
+compiling sx1232-Misc.c...
+compiling sx1272-FskMisc.c...
+compiling sx1272-LoRaMisc.c...
+compiling sx1272-LoRa.c...
+compiling sx1276.c...
+compiling sx1276-FskMisc.c...
+compiling sx1276-Fsk.c...
+compiling sx1276-LoRa.c...
+compiling fifo.c...
+compiling spi.c...
+compiling sx1276-LoRaMisc.c...
+compiling sx12xxEiger.c...
+compiling sx1272-Hal.c...
+compiling sx1232-Hal.c...
+compiling sx1276-Hal.c...
+linking...
+Program Size: Code=140642 RO-data=3222 RW-data=812 ZI-data=11844  
+FromELF: creating hex file...
+".\Output\DCM200_SCR_E_V206.axf" - 0 Error(s), 34 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: GigaDevice
+                http://www.keil.com/pack/GigaDevice.GD32F10x_DFP.2.0.1.pack
+                GigaDevice.GD32F10x_DFP.2.0.1
+                GigaDevice GD32F10x Series Device Support and Examples
+
+<h2>Collection of Component include folders:</h2>
+  .\RTE\_DCM200_SCR
+  D:\Keil_v5\ARM\PACK\GigaDevice\GD32F10x_DFP\2.0.1\Device\Include
+
+<h2>Collection of Component Files used:</h2>
+Build Time Elapsed:  00:00:07
+</pre>
+</body>
+</html>

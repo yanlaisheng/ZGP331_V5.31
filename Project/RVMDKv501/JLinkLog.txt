@@ -1,0 +1,83 @@
+T1964 000:136.064   SEGGER J-Link V6.70e Log File
+T1964 000:136.170   DLL Compiled: Apr 17 2020 17:55:05
+T1964 000:136.175   Logging started @ 2022-12-09 03:33
+T1964 000:136.182 JLINK_SetWarnOutHandler(...)
+T1964 000:136.189 - 0.009ms
+T1964 000:136.196 JLINK_OpenEx(...)
+T1964 000:137.077   Firmware: J-Link Pro V4 compiled Apr 27 2041 16:37:21
+T1964 000:137.263   Decompressing FW timestamp took 148 us
+T1964 000:138.423   Hardware: V4.00
+T1964 000:138.435   S/N: 174504225
+T1964 000:138.443   OEM: SEGGER
+T1964 000:138.450   Feature(s): RDI, FlashBP, FlashDL, JFlash, GDB
+T1964 000:139.076   TELNET listener socket opened on port 19021
+T1964 000:139.202   WEBSRV Starting webserver
+T1964 000:139.270   WEBSRV Webserver running on local port 19080
+T1964 000:139.281 - 3.087ms returns "O.K."
+T1964 000:139.290 JLINK_GetEmuCaps()
+T1964 000:139.295 - 0.021ms returns 0xB9FF7BBF
+T1964 000:139.316 JLINK_TIF_GetAvailable(...)
+T1964 000:139.446 - 0.134ms
+T1964 000:139.467 JLINK_SetErrorOutHandler(...)
+T1964 000:139.473 - 0.007ms
+T1964 000:139.502 JLINK_ExecCommand("ProjectFile = "G:\×ÀÃæ\ZGP331_4G\ZGP331_4G\Project\RVMDKv501\JLinkSettings.ini"", ...). 
+T1964 000:147.782   Device "CORTEX-M3" selected.
+T1964 000:148.064 - 8.571ms returns 0x00
+T1964 000:148.081 JLINK_ExecCommand("Device = STM32F103RC", ...). 
+T1964 000:148.325   Device "STM32F103RC" selected.
+T1964 000:148.476 - 0.392ms returns 0x00
+T1964 000:148.486 JLINK_ExecCommand("DisableConnectionTimeout", ...). 
+T1964 000:148.496 - 0.005ms returns 0x01
+T1964 000:148.502 JLINK_GetHardwareVersion()
+T1964 000:148.507 - 0.007ms returns 0x9C40
+T1964 000:148.513 JLINK_GetDLLVersion()  returns 67005
+T1964 000:148.522 JLINK_GetFirmwareString(...)
+T1964 000:148.527 - 0.007ms
+T1964 000:148.536 JLINK_GetDLLVersion()  returns 67005
+T1964 000:148.541 JLINK_GetCompileDateTime()
+T1964 000:148.546 - 0.007ms
+T1964 000:148.554 JLINK_GetFirmwareString(...)
+T1964 000:148.559 - 0.007ms
+T1964 000:148.565 JLINK_GetHardwareVersion()
+T1964 000:148.570 - 0.007ms returns 0x9C40
+T1964 000:148.581 JLINK_TIF_Select(JLINKARM_TIF_SWD)
+T1964 000:149.268 - 0.696ms returns 0x00
+T1964 000:149.285 JLINK_SetSpeed(5000)
+T1964 000:149.347 - 0.066ms
+T1964 000:150.034 JLINK_SetResetType(JLINKARM_RESET_TYPE_NORMAL)
+T1964 000:150.044 - 0.012ms returns JLINKARM_RESET_TYPE_NORMAL
+T1964 000:150.050 JLINK_Reset()
+T1964 000:854.902   STM32 (connect): Can not attach to CPU. Trying connect under reset.
+T1964 001:005.892   
+  ***** Error: 
+T1964 001:005.939   STM32: Connecting to CPU via connect under reset failed.
+T1964 001:228.883   STM32 (connect): Can not attach to CPU. Trying connect under reset.
+T1964 001:379.888   
+  ***** Error: 
+T1964 001:379.906   STM32: Connecting to CPU via connect under reset failed.
+T1964 001:430.110 JLINK_GetId()
+T1964 001:531.873   STM32 (connect): Can not attach to CPU. Trying connect under reset.
+T1964 001:683.899   
+  ***** Error: 
+T1964 001:683.932   STM32: Connecting to CPU via connect under reset failed.
+T1964 001:907.892   STM32 (connect): Can not attach to CPU. Trying connect under reset.
+T1964 002:059.912   
+  ***** Error: 
+T1964 002:059.958   STM32: Connecting to CPU via connect under reset failed.
+T1964 002:109.868 - 679.769ms   returns 0x00000000
+T1964 002:109.927 JLINK_GetId()
+T1964 002:210.888   STM32 (connect): Can not attach to CPU. Trying connect under reset.
+T1964 002:361.839   
+  ***** Error: 
+T1964 002:361.886   STM32: Connecting to CPU via connect under reset failed.
+T1964 002:584.873   STM32 (connect): Can not attach to CPU. Trying connect under reset.
+T1964 002:736.827   
+  ***** Error: 
+T1964 002:736.872   STM32: Connecting to CPU via connect under reset failed.
+T1964 002:786.833 - 676.934ms   returns 0x00000000
+T1964 002:788.934 JLINK_GetFirmwareString(...)
+T1964 002:788.949 - 0.017ms
+T1964 004:852.069 JLINK_Close()
+T1964 004:857.972 - 5.913ms
+T1964 004:857.987   
+T1964 004:857.992   Closed

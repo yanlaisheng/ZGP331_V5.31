@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "g:/桌面/ZGP331_4G/ZGP331 4G模块程序/0-ZGP331_4G(20240412)-DAULMOTOR-V5.25",
+      "program": "g:/桌面/ZGP331_4G/ZGP331 4G模块程序/0-ZGP331_4G(20240412)-DAULMOTOR-V5.25/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
