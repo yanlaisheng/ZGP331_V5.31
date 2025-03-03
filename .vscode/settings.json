@@ -4,7 +4,8 @@
     "sx12xxeiger.h": "c",
     "sys_config.h": "c",
     "com1_232.h": "c",
-    "com2_232.h": "c"
+    "com2_232.h": "c",
+    "iap.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

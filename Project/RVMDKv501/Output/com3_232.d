@@ -39,5 +39,4 @@
 .\output\com3_232.o: ..\..\User\GlobalConst.h
 .\output\com3_232.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\output\com3_232.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-.\output\com3_232.o: ..\..\User\sim7600ce.h
 .\output\com3_232.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h

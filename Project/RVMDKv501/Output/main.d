@@ -52,3 +52,8 @@
 .\output\main.o: ..\..\User\SX1278\radio\radio.h
 .\output\main.o: ..\..\User\sys_config.h
 .\output\main.o: ..\..\User\spi_flash.h
+.\output\main.o: ..\..\User\iap\IAP.h
+.\output\main.o: ..\..\User\iap\flash_extern.h
+.\output\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\output\main.o: ..\..\User\iap\iap_interface.h
+.\output\main.o: ..\..\User\iap\flash_extern.h

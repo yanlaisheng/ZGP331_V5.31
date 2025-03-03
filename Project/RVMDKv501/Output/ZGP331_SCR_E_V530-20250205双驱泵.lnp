@@ -48,6 +48,10 @@
 ".\output\sx1232-hal.o"
 ".\output\sx1272-hal.o"
 ".\output\sx1276-hal.o"
+".\output\iap.o"
+".\output\iap_interface.o"
+".\output\flash_extern.o"
+".\output\cstring.o"
 --strict --scatter ".\Output\ZGP331_SCR_E_V530-20250205Ë«Çý±Ã.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

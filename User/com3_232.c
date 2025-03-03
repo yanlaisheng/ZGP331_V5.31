@@ -247,7 +247,7 @@
 					//×¢£ºÕâÀïÊ¹ÓÃµÄÊÇTxd2Buffer£¬ÉÏÃæÌî³äµÄ¡£´úÌæRcv3Buffer
 					if(F_GprsMasterNotToCom || F_GprsMasterToCom)
 					{
-						if( Txd2Buffer[0]==2 )		// ´ÓµØÖ·¼ì²â£­½ÓÊÕµ½µÄÉÏÎ»»ú²éÑ¯Ö¸Áî
+						if( Txd2Buffer[0]==Pw_LoRaEquipmentNo )		// ´ÓµØÖ·¼ì²â£­½ÓÊÕµ½µÄÉÏÎ»»ú²éÑ¯Ö¸Áî
 						{
 							¡£¡£¡£¡£¡£¡£
 						}
@@ -539,7 +539,6 @@
 #include "GlobalConst.h"
 #include "string.h" //strstrº¯Êı£ºÕÒ³östr2×Ö·û´®ÔÚstr1×Ö·û´®ÖĞµÚÒ»´Î³öÏÖµÄÎ»ÖÃ
 #include <stdio.h>	//¼ÓÉÏ´Ë¾ä¿ÉÒÔÓÃprintf
-#include "sim7600ce.h"
 #include <stdarg.h>
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -840,8 +839,8 @@ uc8 GPRS_SetParReturn[16] = {
 uc8 GPRS_ZhenTou[16] = {0x7B, 0x09, 0x00, 0x10, 0x31, 0x33, 0x39, 0x31, 0x32, 0x33,
 						0x34, 0x35, 0x36, 0x37, 0x38, 0x7B};
 
-uc8 DtuProgVersion[7] = "5.30";		 // 7 DTU³ÌĞò°æ±¾:70		ĞŞ¸ÄÍê³ÌĞòºó£¬Òª¸ÄÕâ2¸öµØ·½ YLS 2023.12.06
-uc8 DtuProgMakeDate[8] = "20250205"; // 8 DTU³ÌĞòÉú³ÉÈÕÆÚ:71		ĞŞ¸ÄÍê³ÌĞòºó£¬Òª¸ÄÕâ2¸öµØ·½ YLS 2023.12.06
+uc8 DtuProgVersion[7] = "5.31";		 // 7 DTU³ÌĞò°æ±¾:70		ĞŞ¸ÄÍê³ÌĞòºó£¬Òª¸ÄÕâ2¸öµØ·½ YLS 2023.12.06
+uc8 DtuProgMakeDate[8] = "20250221"; // 8 DTU³ÌĞòÉú³ÉÈÕÆÚ:71		ĞŞ¸ÄÍê³ÌĞòºó£¬Òª¸ÄÕâ2¸öµØ·½ YLS 2023.12.06
 
 uc8 DtuHardWare[14] = "V5.3-F103-4G  "; // 14+7 DTUÓ²¼şÆ½Ì¨°æ±¾:73
 uc8 DtuManufacture[6] = "SANLEY";		// 6 DTUÉú²úÉÌLOGO:74
@@ -1039,6 +1038,8 @@ extern unsigned int atoi(unsigned char *s, unsigned char sz);
 extern void delay_ms(vu16 nCount);
 extern void LCD_DLY_ms(u32 Time);
 extern void At_DomainName(u8 i);
+extern void Check_OTA(void); // ¼ì²éÊÇ·ñĞèÒªÉı¼¶ YLS 2024.05.18
+
 // char *tcp_ip = "AT+CIPOPEN=0,\"TCP\",\"119.23.42.226\",8050\r\n";	         // ĞŞ¸Ä·şÎñÆ÷IPºÍ¶Ë¿ÚºÅ
 // char *tcp_ip = "AT+CIPOPEN=0,\"TCP\",\"112.125.89.8\",36987\r\n"; // ĞŞ¸Ä·şÎñÆ÷IPºÍ¶Ë¿ÚºÅ
 
@@ -1104,8 +1105,8 @@ void Com3_config(void) // ´®¿ÚÍ¨Ñ¶ÅäÖÃ
 	USART_DeInit(USART3);					// ¸´Î» USART3
 	USART_StructInit(&USART_InitStructure); // °ÑUSART_InitStructÖĞµÄÃ¿Ò»¸ö²ÎÊı°´È±Ê¡ÖµÌîÈë
 
-//	Pw_GprsBaudRate3 = 57600;					 // 57600;19200;
-	USART_InitStructure.USART_BaudRate = 115200; // 2.25M/BPS   RS232Ğ¾Æ¬:230.4kbps  
+	//	Pw_GprsBaudRate3 = 57600;					 // 57600;19200;
+	USART_InitStructure.USART_BaudRate = 115200; // 2.25M/BPS   RS232Ğ¾Æ¬:230.4kbps
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -1143,16 +1144,16 @@ void Com3_Init(void) // ´®¿Ú³õÊ¼»¯
 void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 {
 	u8 i = 0; // ÁÙÊ±±äÁ¿ k,s,
-	u16 j, m;
+	u16 j, m, n;
 	uchar s; // ttp:transparent protocol Í¸Ã÷Ğ­Òé
 	uint k, len1, len2;
 	u16 *p_wRead;
+	u8 *p_wRead_u8;
 	u8 *p_bMove;
-	u16 *p_wTarget;
+	u16 *p_wTarget;	  // Ö¸ÏòÄ¿±ê×Ö·û´®
+	u8 *p_wTarget_u8; // Ö¸ÏòÄ¿±ê×Ö·û´®
+	u8 *p_bGen;
 	//	u8 ipbuf[15]; // IP»º´æ
-
-	/* 	u8	 *p_bGen;
-		u16	 *p_wTarget;			// Ö¸ÏòÄ¿±ê×Ö·û´®¡¡xdata zcl  2021.11.17	 */
 
 	// ×÷ÎªÖ÷»ú,Ö¸¶¨½ÓÊÕÊ±¼äµ½ÁË,¾Í¿ÉÒÔ´¦Àí½ÓÊÕµ½µÄ×Ö·û´®ÁË
 	//  ÔÚÃ»ÊÕµ½´®ĞĞ×Ö·ûµÄÊ±¼ä³¬¹ıÉè¶¨Ê±£¬¿ÉÒÔ¶Ô½ÓÊÕ»º´æ½øĞĞ´¦ÀíÁË
@@ -1328,9 +1329,9 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 						// 2013.6.19 ÔÙĞŞ¸Ä£ºÁ½´Îºó£¬Ö±½ÓÖØÆô
 
 						len1 = ReceiveGPRSBufOneDateLen + ReceiveGPRSBufTwoDateLen + ReceiveGPRSBufThreeDateLen + ReceiveGPRSBufFourDateLen;
-						if (len1 >= 512)
+						if (len1 > 1500)
 						{
-							len1 = 500; // ZCL 2019.4.26 ÏŞÖÆ´óĞ¡£¬·ÀÖ¹Êı×éÒç³ö
+							len1 = 1500; // ZCL 2019.4.26 ÏŞÖÆ´óĞ¡£¬·ÀÖ¹Êı×éÒç³ö
 
 							if (B_RcvFail[ChannelNo] < 1)
 							{
@@ -1353,7 +1354,7 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 							// 1. DTU×¢²á	 7BºóÃæµÄ×Ö½ÚÊÇ¹¦ÄÜÂë£¬0x81ĞÄÌø°ü×¢²á¹¦ÄÜÂë
 							if (*(ptr2 + 1) == 0x81)
 							{
-								ZhuCeOkFLAG[*(ptr + 10) - 0x30] = 1; // ptr+10
+								ZhuCeOkFLAG[ChannelNo] = 1; // *(ptr + 10) - 0x30   YLS 2024.05.20
 							}
 							// 2. ²éÑ¯DTU²ÎÊı
 							else if (*(ptr2 + 1) == 0x8B)
@@ -1390,7 +1391,7 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 					else if ((ptr2 = (uchar *)strstr(Rcv3Buffer, "+CIPOPEN:")) != NULL) // YLS 2023.02.20
 					{
 						s = *(ptr2 + 10); // YLS 2023.02.20
-						if (s >= 0x30)
+						if (s >= 0x30 && s <= 0x33)
 						{
 							// ÕâÀïÔ­ÏÈÊ¹ÓÃ CGD0_ConnectNo£¬ÔÚ²âÊÔ×´Ì¬»á²»¶Ô£¬ÒòÎªÊÇÍ¨¹ı´®¿ÚÖúÊÖ·¢
 							// Ö¸Áî£¬ÕâÀï¸Ä³ÉÓÃ½ÓÊÕµÄÊı¾İÀ´ÅĞ¶ÏÁ¬½ÓºÅ
@@ -1577,11 +1578,6 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 						// IPD3UDP:***  (***ÊÇÊı¾İ) 2014.11.27 ²¹³äËµÃ÷
 						else
 						{
-							// ptr3 = (u8 *)strstr(Rcv3Buffer, "P:"); // P:µÄÎ»ÖÃ
-							// if (ptr3 != NULL)
-							// {
-							// 	Txd2Buffer[k] = *(ptr3 + 2 + k);
-							// }
 							Txd2Buffer[k] = ReceiveGPRSBuf[k]; // Ö±½Ó´æÈëTxd2Buffer
 						}
 					}
@@ -1615,25 +1611,30 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 											if (Txd2Buffer[5] > 125)
 												Txd2Buffer[5] = 125; // ZCL 2019.4.26 ÏŞÖÆ´óĞ¡£¬·ÀÖ¹Êı×éÒç³ö
 
-											if (Lw_Com3RegAddr < 10000)
+											if (Lw_Com3RegAddr < 63000)
 											{
-												p_wRead = w_DNBParLst; // w_DNBParLst PARÇø
-												p_wRead += Lw_Com3RegAddr - DNB_ADDRESS;
+												p_wRead = AddressConvert_Com3(Lw_Com3RegAddr);
+												p_bMove = Txd3TmpBuffer;
+												for (k = 0; k < Txd2Buffer[5]; k++) // Ìî³ä²éÑ¯ÄÚÈİ
+												{
+													m = *(p_wRead + k); // 2023.12.16 YLS
+													*(p_bMove + 3 + k * 2) = m >> 8;
+													*(p_bMove + 3 + k * 2 + 1) = m;
+												}
 											}
-											else if (Lw_Com3RegAddr >= 60000)
+											else
 											{
-												p_wRead = w_ParLst; // w_ParLstÇø
-												p_wRead += Lw_Com3RegAddr - 60000;
+												p_wRead_u8 = GprsPar; // GprsParÇø°´×Ö½Ú½øĞĞ¶ÁÈ¡
+												p_wRead_u8 += Lw_Com3RegAddr - 63000;
+												p_bMove = Txd3TmpBuffer;
+												for (k = 0; k < Txd2Buffer[5]; k++) // Ìî³ä²éÑ¯ÄÚÈİ
+												{
+													m = *(p_wRead_u8 + k);
+													*(p_bMove + 3 + k * 2) = 0; // ¸ß×Ö½ÚÌî³ä0
+													*(p_bMove + 3 + k * 2 + 1) = m;
+												}
 											}
 
-											p_bMove = Txd3TmpBuffer;
-											for (k = 0; k < Txd2Buffer[5]; k++) // Ìî³ä²éÑ¯ÄÚÈİ
-											{
-												// m = *(p_wRead + Lw_Com3RegAddr + k);// 2023.12.16 YLS
-												m = *(p_wRead + k); // 2023.12.16 YLS
-												*(p_bMove + 3 + k * 2) = m >> 8;
-												*(p_bMove + 3 + k * 2 + 1) = m;
-											}
 											Lw_Txd3ChkSum = CRC16(Txd3TmpBuffer, Txd3TmpBuffer[2] + 3);
 											Txd3TmpBuffer[Txd3TmpBuffer[2] + 3] = Lw_Txd3ChkSum >> 8; // /256
 											Txd3TmpBuffer[Txd3TmpBuffer[2] + 4] = Lw_Txd3ChkSum;	  // µÍÎ»×Ö½Ú
@@ -1680,11 +1681,18 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 										else if (Lw_Com3RegAddr >= 60000) // Èç¹ûµØÖ·ÔÚ60000ÒÔÉÏ£¬¾ÍĞŞ¸ÄZGP331±¾ÉíµÄ²ÎÊı
 										{
 											// ÕâÊÇÔ¤ÖÃ±¾»úµÄ Éè¶¨²ÎÊı£»
-											p_wTarget = w_ParLst; // Ğ´STM32 PARÇø
-											p_wTarget += Lw_Com3RegAddr - 60000;
-											m = Txd2Buffer[4];
-											// w_ParLst[Lw_Com3RegAddr] = (m << 8) + Txd2Buffer[5];
-											*p_wTarget = (m << 8) + Txd2Buffer[5]; // ĞŞ¸Ä²ÎÊı
+											if (Lw_Com3RegAddr < 63000)
+											{
+												p_wTarget = AddressConvert_Com3(Lw_Com3RegAddr);
+												m = Txd2Buffer[4];
+												*p_wTarget = (m << 8) + Txd2Buffer[5]; // ĞŞ¸Ä²ÎÊı
+											}
+											else if (Lw_Com3RegAddr >= 63000 && Lw_Com3RegAddr < 64000)
+											{
+												p_wTarget_u8 = GprsPar; // GprsParÇø°´×Ö½Ú½øĞĞĞ´
+												p_wTarget_u8 += Lw_Com3RegAddr - 63000;
+												*p_wTarget_u8 = Txd2Buffer[5]; // ĞŞ¸Ä²ÎÊı
+											}
 
 											// ZCL 2021.7.10  06Ö¸Áî£ºÊÕµ½µÄ ºÍ  ·µ»ØµÄ ÊÇÒ»ÑùµÄ¡£
 											Txd3TmpBuffer[0] = Pw_LoRaEquipmentNo; // Éè±¸´ÓµØÖ·Pw_EquipmentNo
@@ -1705,15 +1713,77 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 											B_GprsDataReturn = 1; // Ä£·ÂÍ¸´«ÖĞ£¬´®¿ÚÊÕµ½Êı¾İ£¬×ª·¢µ½GPRSÍøÂç
 										}
 									}
+									else if (Txd2Buffer[1] == 16) // 16Ô¤ÖÃ¶à¼Ä´æÆ÷
+									{
+										B_Com3Cmd16 = 1;
+										if (Txd2Buffer[5] <= 30) // ZCL 2021.11.17  ÏŞÖÆÊıÁ¿
+										{
+											p_bGen = Txd2Buffer;
+											j = Txd2Buffer[2];
+											Lw_Com3RegAddr = (j << 8) + Txd2Buffer[3];
+
+											if (Lw_Com3RegAddr >= 60000) // Èç¹ûµØÖ·ÔÚ60000ÒÔÉÏ£¬¾ÍĞŞ¸ÄZGP331±¾ÉíµÄ²ÎÊı
+											{
+												// ÕâÊÇÔ¤ÖÃ±¾»úµÄ Éè¶¨²ÎÊı£»
+												if (Lw_Com3RegAddr < 63000)
+												{
+													p_wTarget = AddressConvert_Com3(Lw_Com3RegAddr);
+
+													for (k = 0; k < Txd2Buffer[5]; k++) // Rcv0Buffer[5]=×ÖÊı
+													{
+														m = *(p_bGen + 7 + k * 2);
+														n = *(p_bGen + 7 + k * 2 + 1);
+														*(p_wTarget + Lw_Com3RegAddr + k) = (m << 8) + n;
+													}
+												}
+												else if (Lw_Com3RegAddr >= 63000 && Lw_Com3RegAddr < 64000)
+												{
+													p_wTarget_u8 = GprsPar; // GprsParÇø°´×Ö½Ú½øĞĞĞ´
+													p_wTarget_u8 += Lw_Com3RegAddr - 63000;
+
+													for (k = 0; k < Txd2Buffer[5]; k++) // Rcv0Buffer[5]=×ÖÊı
+													{
+														*(p_wTarget_u8 + k) = *(p_bGen + 8 + k * 2); // ĞŞ¸Ä²ÎÊı
+													}
+												}
+											}
+										}
+
+										// ZCL 2021.7.10  06Ö¸Áî£ºÊÕµ½µÄ ºÍ  ·µ»ØµÄ ÊÇÒ»ÑùµÄ¡£
+										Txd3TmpBuffer[0] = Pw_LoRaEquipmentNo; // Éè±¸´ÓµØÖ·Pw_EquipmentNo
+										Txd3TmpBuffer[1] = Txd2Buffer[1];	   // ¹¦ÄÜÂë			ZCL 2019.3.12 ÕâÀï±È½ÏÌØÊâ£¬ÓÃµÄTxd2Buffer
+										Txd3TmpBuffer[2] = Txd2Buffer[2];	   // ¡¡
+										Txd3TmpBuffer[3] = Txd2Buffer[3];	   //
+										if (Txd2Buffer[5] <= 30)			   // ZCL 2021.11.17  ÏŞÖÆÊıÁ¿
+										{
+											Txd3TmpBuffer[4] = Txd2Buffer[4]; //
+											Txd3TmpBuffer[5] = Txd2Buffer[5]; //
+										}
+										else
+										{
+											Txd3TmpBuffer[4] = 0xff; // Èç¹û³¬ÁË·¶Î§£¬¾Í·µ»Ø0xff
+											Txd3TmpBuffer[5] = 0xff; //
+										}
+
+										Lw_Txd3ChkSum = CRC16(Txd3TmpBuffer, 6);
+										Txd3TmpBuffer[6] = Lw_Txd3ChkSum >> 8; // /256
+										Txd3TmpBuffer[7] = Lw_Txd3ChkSum;	   // µÍÎ»×Ö½Ú
+										Cw_Txd3TmpMax = 8;
+										//
+										B_Com3Cmd16 = 0;
+										Cw_Txd3 = 0;
+										// ZCL 2019.3.12 ĞÂÌíÖ¸Áî£¬±È½ÏÖØÒª£¡Ä£·ÂÍ¸´«ÖĞ£¬´®¿ÚÊÕµ½Êı¾İ£¬×ª·¢µ½GPRSÍøÂç
+										B_GprsDataReturn = 1; // Ä£·ÂÍ¸´«ÖĞ£¬´®¿ÚÊÕµ½Êı¾İ£¬×ª·¢µ½GPRSÍøÂç
+									}
 								}
 							}
 						}
 					}
-					else // ±äÆµµç»ú
+					else if (Pw_EquipmentType == 1 || Pw_EquipmentType == 2) // ±äÆµµç»ú»ò¸ßÑ¹µç»ú
 					{
 						if (F_GprsMasterNotToCom || F_GprsMasterToCom)
 						{
-							if (Txd2Buffer[0] == 2) // ´ÓµØÖ·¼ì²â£­½ÓÊÕµ½µÄÉÏÎ»»ú²éÑ¯Ö¸Áî
+							if (Txd2Buffer[0] == Pw_LoRaEquipmentNo) // ´ÓµØÖ·¼ì²â£­½ÓÊÕµ½µÄÉÏÎ»»ú²éÑ¯Ö¸Áî
 							{
 								j = CRC16(Txd2Buffer, len2 - 2); // CRC Ğ£Ñé
 								k = j >> 8;
@@ -1726,23 +1796,12 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 										j = Txd2Buffer[2];
 										Lw_Com3RegAddr = (j << 8) + Txd2Buffer[3];
 									}
-									else if (Txd2Buffer[1] == 1) // 01¶ÁÈ¡ÏßÈ¦×´Ì¬
-									{
-										B_Com3Cmd01 = 1;
-									}
 									else if (Txd2Buffer[1] == 6) // 06Ô¤ÖÃµ¥¼Ä´æÆ÷
 									{
 										// C_ForceSavPar=0;		// Ç¿ÖÆ±£´æ²ÎÊı¼ÆÊıÆ÷=0
 										B_Com3Cmd06 = 1;
 										j = Txd2Buffer[2];
 										Lw_Com3RegAddr = (j << 8) + Txd2Buffer[3];
-
-										// ZCL 2021.7.10  ´¦ÀíÒªĞŞ¸ÄµÄÊı¾İ  ICCARD È¡Ë®»ú
-										// ZCL 2021.11.17
-
-										// ÕâÊÇÔ¤ÖÃ±¾»úµÄ Éè¶¨²ÎÊı£» ÕâÀïÎÒÃÇĞèÒªµÄÊÇÔ¤ÖÃ LORA´Ó»úµÄ²ÎÊı£¬ĞèÒª×ª·¢µÄ£¡
-										/* 									m=Txd2Buffer[4];
-																			w_ParLst[Lw_Com3RegAddr]=(m<<8)+Txd2Buffer[5];	 */
 
 										// ZCL 2021.11.17 ×ª·¢Ö¸Áî
 										B_LoraSendWrite = 1; // ZCL 2021.11.17
@@ -1785,15 +1844,8 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 											LoRaTxBuf2[j] = Txd2Buffer[j];
 										}
 									}
-
-									//								else
-									//									i = 1;
 								}
-								//							else
-								//								i = 2;
 							}
-							//						else
-							//							i = 3;
 						}
 
 						// ZCL 2019.3.12  Ö÷»úGPRSÄ£Ê½ÏÂ£¬½âÎö³öÖ¸Áî£¬×¼±¸·µ»Ø£¡
@@ -1803,12 +1855,18 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 							Txd3TmpBuffer[1] = Txd2Buffer[1];	  // ¹¦ÄÜÂë			ZCL 2019.3.12 ÕâÀï±È½ÏÌØÊâ£¬ÓÃµÄTxd2Buffer
 							Txd3TmpBuffer[2] = Txd2Buffer[5] * 2; // Rcv2Buffer[5]=×ÖÊı ¡¡
 
-							// ×ª»¯µØÖ· ZCL 2015.7.11
-
 							if (Txd2Buffer[5] > 125)
 								Txd2Buffer[5] = 125; // ZCL 2019.4.26 ÏŞÖÆ´óĞ¡£¬·ÀÖ¹Êı×éÒç³ö
 
-							p_wRead = w_GprsParLst; // ¶Áw_GprsParLst PARÇø	2019.3.14
+							if (Pw_EquipmentType == 1) // ±äÆµµç»ú
+							{
+								p_wRead = w_GprsParLst; // ¶Áw_GprsParLst PARÇø	2019.3.14
+							}
+							else if (Pw_EquipmentType == 2) // ¸ßÑ¹µç»ú
+							{
+								p_wRead = w_ParLst; // ¸ßÑ¹µç»úÓÃµÄw_ParLst ²ÎÊıÇø
+							}
+
 							p_bMove = Txd3TmpBuffer;
 							for (k = 0; k < Txd2Buffer[5]; k++) // Ìî³ä²éÑ¯ÄÚÈİ
 							{
@@ -1851,7 +1909,6 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 							Txd3TmpBuffer[6] = Lw_Txd3ChkSum >> 8; // /256
 							Txd3TmpBuffer[7] = Lw_Txd3ChkSum;	   // µÍÎ»×Ö½Ú
 							Cw_Txd3TmpMax = 8;
-							//
 							//
 							B_Com3Cmd06 = 0;
 							Cw_Txd3 = 0;
@@ -1952,7 +2009,8 @@ void Com3_RcvProcess(void) // ½ÓÊÕ´¦Àí³ÌĞò Ğ£Ñé³ÌĞò
 					USART_ITConfig(USART2, USART_IT_TC, ENABLE); // ¿ªÊ¼·¢ËÍ.
 					USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
 				}
-				else if (Pw_ConsoleInfo > 0) // Òº¾§ÆÁ²ÎÊı£º¿ØÖÆÌ¨ĞÅÏ¢ÀàĞÍ,=1Êä³öµ÷ÊÔĞÅÏ¢
+
+				if (Pw_ConsoleInfo > 0) // Òº¾§ÆÁ²ÎÊı£º¿ØÖÆÌ¨ĞÅÏ¢ÀàĞÍ,=1Êä³öµ÷ÊÔĞÅÏ¢
 				{
 					if (Cw_BakRcv3 >= 512)
 						Cw_BakRcv3 = 500; // ZCL 2019.4.26 ÏŞÖÆ´óĞ¡£¬·ÀÖ¹Êı×éÒç³ö
@@ -3891,7 +3949,7 @@ void Sms_Function(void) // ¶ÌĞÅÖ¸Áî£ºÖØÆô£¬Ó²¼şÖØÆô£¬¿´ÃÅ¹·¸´Î»ÖØÆô£¬Éè±¸ÆôÍ££¬¶
 			B_SmsRunStop = 2; // ·¢ËÍÒ»´ÎÆôÍ£Ö¸Áîºó£¬ÈÃB_SmsRunStop=2£¬Ã»ÓĞÊÕµ½ÑÓÊ±¼ÌĞø·¢£¬ÊÕµ½=3
 			C_SmsRunStop = 0;
 			//
-			Txd2Buffer[0] = 0x02;				 // Éè±¸´ÓµØÖ·
+			Txd2Buffer[0] = Pw_LoRaEquipmentNo;	 // Éè±¸´ÓµØÖ·
 			Txd2Buffer[1] = 0x06;				 // ¹¦ÄÜÂë
 			Txd2Buffer[2] = 0x01;				 // ¼Ä´æÆ÷µØÖ·
 			Txd2Buffer[3] = 0x3D;				 // ¼Ä´æÆ÷µØÖ·
@@ -4591,6 +4649,8 @@ void M35_LOOP(void) // GPRS²Ù×÷º¯Êı	 M35Ñ­»·×´Ì¬
 				Gprs_HeartDelaySend(); // ĞÄÌø°üµÄÑÓÊ±·¢ËÍº¯Êı£¬Ã¿Ò»Ãë½øÈëÒ»´Î
 				// ¶ÌĞÅ¹¦ÄÜ 2012.9.19
 				Sms_Function();
+
+				//				Check_OTA(); // ¼ì²éÊÇ·ñĞèÒªÉı¼¶
 			}
 			break;
 
@@ -4747,8 +4807,6 @@ void Com3_ReceiveData(void)
 				}
 				for (i = 0; i <= 5; i++)
 					p1_TmpBuf[i] = 0; // °Ñ½ÓÊÕµÄµÚ1Â·×Ö·û»º´æ³¤¶ÈÊıÇå0£¬ÎªÏÂÒ»´Î¼ÆËã
-				//					for (i = 0; i <RCV3_MAX; i++)
-				//						ReceiveGPRSBuf[i] = 0; //ÏÈÇå¿ÕReceiveGPRSBuf£¬È»ºóÔÙ°Ñ½ÓÊÕµ½µÄÊı¾İ·Åµ½ÀïÃæ
 				memset(ReceiveGPRSBuf, 0, RCV3_MAX);
 				m = ReceiveGPRSBufOneDateLen;
 				for (RecNumBit = 0; m != 0; RecNumBit++)
@@ -4772,7 +4830,6 @@ void Com3_ReceiveData(void)
 				for (i = 24 + n; i <= (ReceiveGPRSBufOneDateLen + 24 + n); i++)
 				{
 					ReceiveGPRSBuf[j] = Rcv3Buffer[i]; // ½ÓÊÕµ½µÄµÚ1Â·Êı¾İ¸øReceiveGPRSBuf
-													   //					ReceiveGPRSBuf[j] = Rcv3_Back_Buffer[i]; // ½ÓÊÕµ½µÄµÚ1Â·Êı¾İ¸øReceiveGPRSBuf
 
 					j++;
 				}
@@ -4812,8 +4869,6 @@ void Com3_ReceiveData(void)
 				}
 				for (i = 0; i <= 5; i++)
 					p1_TmpBuf[i] = 0; // °Ñ½ÓÊÕµÄµÚ2Â·×Ö·û»º´æ³¤¶ÈÊıÇå0£¬ÎªÏÂÒ»´Î¼ÆËã
-				//					for (i = 0; i <RCV3_MAX; i++)
-				//						ReceiveGPRSBuf[i] = 0; //ÏÈÇå¿ÕReceiveGPRSBuf£¬È»ºóÔÙ°Ñ½ÓÊÕµ½µÄÊı¾İ·Åµ½ÀïÃæ
 				memset(ReceiveGPRSBuf, 0, RCV3_MAX);
 				m = ReceiveGPRSBufTwoDateLen;
 				for (RecNumBit = 0; m != 0; RecNumBit++)
@@ -4837,7 +4892,6 @@ void Com3_ReceiveData(void)
 				for (i = 24 + n; i <= (ReceiveGPRSBufTwoDateLen + 24 + n); i++)
 				{
 					ReceiveGPRSBuf[j] = Rcv3Buffer[i]; // ½ÓÊÕµ½µÄµÚ2Â·Êı¾İ¸øReceiveGPRSBuf
-													   //					ReceiveGPRSBuf[j] = Rcv3_Back_Buffer[i]; // ½ÓÊÕµ½µÄµÚ1Â·Êı¾İ¸øReceiveGPRSBuf
 					j++;
 				}
 				if (j >= ReceiveGPRSBufTwoDateLen)
@@ -4876,8 +4930,6 @@ void Com3_ReceiveData(void)
 				}
 				for (i = 0; i <= 5; i++)
 					p1_TmpBuf[i] = 0; // °Ñ½ÓÊÕµÄµÚ3Â·×Ö·û»º´æ³¤¶ÈÊıÇå0£¬ÎªÏÂÒ»´Î¼ÆËã
-				//					for (i = 0; i <RCV3_MAX; i++)
-				//						ReceiveGPRSBuf[i] = 0; //ÏÈÇå¿ÕReceiveGPRSBuf£¬È»ºóÔÙ°Ñ½ÓÊÕµ½µÄÊı¾İ·Åµ½ÀïÃæ
 				memset(ReceiveGPRSBuf, 0, RCV3_MAX);
 				m = ReceiveGPRSBufThreeDateLen;
 				for (RecNumBit = 0; m != 0; RecNumBit++)
@@ -4901,7 +4953,6 @@ void Com3_ReceiveData(void)
 				for (i = 24 + n; i <= (ReceiveGPRSBufThreeDateLen + 24 + n); i++)
 				{
 					ReceiveGPRSBuf[j] = Rcv3Buffer[i]; // ½ÓÊÕµ½µÄµÚ3Â·Êı¾İ¸øReceiveGPRSBuf
-													   //					ReceiveGPRSBuf[j] = Rcv3_Back_Buffer[i]; // ½ÓÊÕµ½µÄµÚ1Â·Êı¾İ¸øReceiveGPRSBuf
 					j++;
 				}
 				if (j >= ReceiveGPRSBufThreeDateLen)
@@ -4940,8 +4991,6 @@ void Com3_ReceiveData(void)
 				}
 				for (i = 0; i <= 5; i++)
 					p1_TmpBuf[i] = 0; // °Ñ½ÓÊÕµÄµÚ4Â·×Ö·û»º´æ³¤¶ÈÊıÇå0£¬ÎªÏÂÒ»´Î¼ÆËã
-				//					for (i = 0; i <RCV3_MAX; i++)
-				//						ReceiveGPRSBuf[i] = 0; //ÏÈÇå¿ÕReceiveGPRSBuf£¬È»ºóÔÙ°Ñ½ÓÊÕµ½µÄÊı¾İ·Åµ½ÀïÃæ
 				memset(ReceiveGPRSBuf, 0, RCV3_MAX);
 				m = ReceiveGPRSBufFourDateLen;
 				for (RecNumBit = 0; m != 0; RecNumBit++)
@@ -4965,7 +5014,6 @@ void Com3_ReceiveData(void)
 				for (i = 24 + n; i <= (ReceiveGPRSBufFourDateLen + 24 + n); i++)
 				{
 					ReceiveGPRSBuf[j] = Rcv3Buffer[i]; // ½ÓÊÕµ½µÄµÚ4Â·Êı¾İ¸øReceiveGPRSBuf
-													   //					ReceiveGPRSBuf[j] = Rcv3_Back_Buffer[i]; // ½ÓÊÕµ½µÄµÚ1Â·Êı¾İ¸øReceiveGPRSBuf
 					j++;
 				}
 				if (j >= ReceiveGPRSBufFourDateLen)
@@ -4974,9 +5022,6 @@ void Com3_ReceiveData(void)
 				F_AcklinkNum = 4;
 			}
 		}
-
-		// delay_ms(50);
-		// sim7600ce_DoWithData(); // ´¦Àí½ÓÊÕµ½µÄÊı¾İ
 	}
 }
 
@@ -5143,209 +5188,221 @@ void DomainNameResolution(void)
 	u8 i = 0, k = 0;
 
 	// µÚ1Â·ÓòÃû
-	for (i = 0; i < 31; i++)
+	if (GprsPar[DomainName0Base] != 0)
 	{
-		domain_name[i] = GprsPar[DomainName0Base + i];
-	}
-	p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
-	if (p2)																	// ½âÎöÕıÈ·
-	{
-		p3 = (u8 *)strstr((const char *)p2, ","); //
-		sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
-		for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
+		for (i = 0; i < 31; i++)
 		{
-			if (p_TmpBuf[i] == 0x2E)
-			{
-				Pw_Link1IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip0Base] = Pw_Link1IP1;		 // YLS 2022.12.27
-				k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
-				break;								 //
-			}
+			domain_name[i] = GprsPar[DomainName0Base + i];
 		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+		p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
+		if (p2)																	// ½âÎöÕıÈ·
 		{
-			if (p_TmpBuf[i] == 0x2E)
+			p3 = (u8 *)strstr((const char *)p2, ","); //
+			sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
+			for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link1IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip0Base + 1] = Pw_Link1IP2;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link1IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip0Base] = Pw_Link1IP1;		 // YLS 2022.12.27
+					k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
+					break;								 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x2E)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link1IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip0Base + 2] = Pw_Link1IP3;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link1IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip0Base + 1] = Pw_Link1IP2;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x22)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link1IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip0Base + 3] = Pw_Link1IP4;		 // YLS 2022.12.27
-				k = 0;									 //
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link1IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip0Base + 2] = Pw_Link1IP3;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
+			}
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+			{
+				if (p_TmpBuf[i] == 0x22)
+				{
+					Pw_Link1IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip0Base + 3] = Pw_Link1IP4;		 // YLS 2022.12.27
+					k = 0;									 //
+					break;									 //
+				}
 			}
 		}
 	}
 
 	// µÚ2Â·ÓòÃû
-	for (i = 0; i < 31; i++)
+	if (GprsPar[DomainName1Base] != 0)
 	{
-		domain_name[i] = GprsPar[DomainName1Base + i];
-	}
-	p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
-	if (p2)																	// ½âÎöÕıÈ·
-	{
-		p3 = (u8 *)strstr((const char *)p2, ","); //
-		sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
-		for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
+		for (i = 0; i < 31; i++)
 		{
-			if (p_TmpBuf[i] == 0x2E)
-			{
-				Pw_Link2IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip1Base] = Pw_Link2IP1;		 // YLS 2022.12.27
-				k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
-				break;								 //
-			}
+			domain_name[i] = GprsPar[DomainName1Base + i];
 		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+		p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
+		if (p2)																	// ½âÎöÕıÈ·
 		{
-			if (p_TmpBuf[i] == 0x2E)
+			p3 = (u8 *)strstr((const char *)p2, ","); //
+			sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
+			for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link2IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip1Base + 1] = Pw_Link2IP2;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link2IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip1Base] = Pw_Link2IP1;		 // YLS 2022.12.27
+					k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
+					break;								 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x2E)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link2IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip1Base + 2] = Pw_Link2IP3;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link2IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip1Base + 1] = Pw_Link2IP2;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x22)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link2IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip1Base + 3] = Pw_Link2IP4;		 // YLS 2022.12.27
-				k = 0;									 //
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link2IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip1Base + 2] = Pw_Link2IP3;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
+			}
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+			{
+				if (p_TmpBuf[i] == 0x22)
+				{
+					Pw_Link2IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip1Base + 3] = Pw_Link2IP4;		 // YLS 2022.12.27
+					k = 0;									 //
+					break;									 //
+				}
 			}
 		}
 	}
 
 	// µÚ3Â·ÓòÃû
-	for (i = 0; i < 31; i++)
+	if (GprsPar[DomainName2Base] != 0)
 	{
-		domain_name[i] = GprsPar[DomainName2Base + i];
-	}
-	p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
-	if (p2)																	// ½âÎöÕıÈ·
-	{
-		p3 = (u8 *)strstr((const char *)p2, ","); //
-		sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
-		for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
+		for (i = 0; i < 31; i++)
 		{
-			if (p_TmpBuf[i] == 0x2E)
-			{
-				Pw_Link3IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip2Base] = Pw_Link3IP1;		 // YLS 2022.12.27
-				k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
-				break;								 //
-			}
+			domain_name[i] = GprsPar[DomainName2Base + i];
 		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+		p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
+		if (p2)																	// ½âÎöÕıÈ·
 		{
-			if (p_TmpBuf[i] == 0x2E)
+			p3 = (u8 *)strstr((const char *)p2, ","); //
+			sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
+			for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link3IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip2Base + 1] = Pw_Link3IP2;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link3IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip2Base] = Pw_Link3IP1;		 // YLS 2022.12.27
+					k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
+					break;								 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x2E)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link3IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip2Base + 2] = Pw_Link3IP3;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link3IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip2Base + 1] = Pw_Link3IP2;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x22)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link3IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip2Base + 3] = Pw_Link3IP4;		 // YLS 2022.12.27
-				k = 0;									 //
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link3IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip2Base + 2] = Pw_Link3IP3;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
+			}
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+			{
+				if (p_TmpBuf[i] == 0x22)
+				{
+					Pw_Link3IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip2Base + 3] = Pw_Link3IP4;		 // YLS 2022.12.27
+					k = 0;									 //
+					break;									 //
+				}
 			}
 		}
 	}
 
 	// µÚ4Â·ÓòÃû
-	for (i = 0; i < 31; i++)
+	if (GprsPar[DomainName3Base] != 0)
 	{
-		domain_name[i] = GprsPar[DomainName3Base + i];
-	}
-	p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
-	if (p2)																	// ½âÎöÕıÈ·
-	{
-		p3 = (u8 *)strstr((const char *)p2, ","); //
-		sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
-		for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
+		for (i = 0; i < 31; i++)
 		{
-			if (p_TmpBuf[i] == 0x2E)
-			{
-				Pw_Link4IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip3Base] = Pw_Link4IP1;		 // YLS 2022.12.27
-				k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
-				break;								 //
-			}
+			domain_name[i] = GprsPar[DomainName3Base + i];
 		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+		p2 = (u8 *)strstr((const char *)Rcv3Buffer, (const char *)domain_name); // ½ÓÊÕ½âÎöµÄIPĞÅÏ¢
+		if (p2)																	// ½âÎöÕıÈ·
 		{
-			if (p_TmpBuf[i] == 0x2E)
+			p3 = (u8 *)strstr((const char *)p2, ","); //
+			sprintf((char *)p_TmpBuf, "%s", p3 + 2);  // °Ñ½âÎöµÄIPĞÅÏ¢¸øp_TmpBuf
+			for (i = 0; i <= 3; i++)				  // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link4IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip3Base + 1] = Pw_Link4IP2;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link4IP1 = atoi(&p_TmpBuf[0], i); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip3Base] = Pw_Link4IP1;		 // YLS 2022.12.27
+					k = i + 1;							 // IPÏÂÒ»Î»µÄÖµ
+					break;								 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x2E)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link4IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip3Base + 2] = Pw_Link4IP3;		 // YLS 2022.12.27
-				k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link4IP2 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip3Base + 1] = Pw_Link4IP2;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
 			}
-		}
-		for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
-		{
-			if (p_TmpBuf[i] == 0x22)
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
 			{
-				Pw_Link4IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
-				GprsPar[Ip3Base + 3] = Pw_Link4IP4;		 // YLS 2022.12.27
-				k = 0;									 //
-				break;									 //
+				if (p_TmpBuf[i] == 0x2E)
+				{
+					Pw_Link4IP3 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip3Base + 2] = Pw_Link4IP3;		 // YLS 2022.12.27
+					k = i + 1;								 // IPÏÂÒ»Î»µÄÖµ
+					break;									 //
+				}
+			}
+			for (i = k; i <= 3 + k; i++) // ×ª»¯Îª16½øÖÆÊı
+			{
+				if (p_TmpBuf[i] == 0x22)
+				{
+					Pw_Link4IP4 = atoi(&p_TmpBuf[k], i - k); // ×ª»»Îª16½øÖÆ
+					GprsPar[Ip3Base + 3] = Pw_Link4IP4;		 // YLS 2022.12.27
+					k = 0;									 //
+					break;									 //
+				}
 			}
 		}
 	}
