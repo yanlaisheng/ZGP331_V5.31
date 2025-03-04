@@ -86,6 +86,7 @@ extern u8 ModParBitPos;		   // 修改参数位位置=0
 extern u8 S_OldModParStatus;   // 旧的修改参数状态（保存对比用）ZCL 2018.5.16
 extern u8 B_PressedStopRunKey; // 按下STOP或者RUN键 2016.12.6
 extern u8 B_ForceSavPar;	   // 强制保存参数标志
+extern uchar B_GprsDataReturn; // GPRS 数据返回。有连接，收到串口2数据，就通过DTU发送出去
 /* Private function prototypes -----------------------------------------------*/
 void GPIO_Com1_Configuration(void); // GPIO配置
 void Com1_config(void);
@@ -429,39 +430,60 @@ void Com1_SlaveSend(void) // 串口1从机发送
 			j = Rcv1Buffer[2];
 			Lw_Com1Addr = (j << 8) + Rcv1Buffer[3];
 
-			if (Lw_Com1Addr < GPRS_WRPAR_ADDRESS)
+			if (Lw_Com1Addr < STM32_RPAR_ADDRESS || Lw_Com1Addr >= GPRS_WRPAR_ADDRESS)
 			{
-				p_wRead = AddressConvert(Lw_Com1Addr); // 2023.12.16 YLS
-				p_bMove = Txd1Buffer;
-				for (k = 0; k < Rcv1Buffer[5]; k++) // 填充查询内容
-				{
-					m = *(p_wRead + k); // 2023.12.16 YLS  函数AddressConvert中已经加上了Lw_Com1RegAddr这个偏移量
-					*(p_bMove + 3 + k * 2) = m >> 8;
-					*(p_bMove + 3 + k * 2 + 1) = m;
-				}
-			}
-			else if (Lw_Com1Addr >= GPRS_WRPAR_ADDRESS) // YLS 2025.03.01增加读取GPRS参数
-			{
-				p_wRead_u8 = GprsPar;
-				p_wRead_u8 += Lw_Com1Addr - GPRS_WRPAR_ADDRESS;
-				for (k = 0; k < Rcv1Buffer[5]; k++) // 填充查询内容
-				{
-					m = *(p_wRead_u8 + k);
-					*(p_bMove + 3 + k * 2) = 0;
-					*(p_bMove + 3 + k * 2 + 1) = m;
-				}
-			}
+				Txd1Buffer[0] = Pw_LoRaEquipmentNo; // 本机LoRa地址
+				Txd1Buffer[1] = Rcv1Buffer[1];		// 功能码			ZCL 2019.3.12 这里比较特殊，用的Txd2Buffer
+				Txd1Buffer[2] = Rcv1Buffer[5] * 2;	// Rcv2Buffer[5]=字数 　
 
-			Lw_Txd1ChkSum = CRC16((u8 *)Txd1Buffer, Txd1Buffer[2] + 3);
-			Txd1Buffer[Txd1Buffer[2] + 3] = Lw_Txd1ChkSum >> 8; // /256
-			Txd1Buffer[Txd1Buffer[2] + 4] = Lw_Txd1ChkSum;		// 低位字节
-			Cw_Txd1Max = Txd1Buffer[2] + 5;
-			//
-			B_Com1Cmd03 = 0;
-			Cw_Txd1 = 0;
-			// RS185_CON=1;
-			USART_SendData(USART1, Txd1Buffer[Cw_Txd1++]);
-			USART_ITConfig(USART1, USART_IT_TC, ENABLE); // 开始发送.
+				if (Rcv1Buffer[5] > 125)
+					Rcv1Buffer[5] = 125; // 限制大小，防止数组溢出
+
+				if (Lw_Com1Addr < 63000)
+				{
+					p_wRead = AddressConvert_Com3(Lw_Com1Addr);
+					p_bMove = Txd1Buffer;
+					for (k = 0; k < Rcv1Buffer[5]; k++) // 填充查询内容
+					{
+						m = *(p_wRead + k); // 2023.12.16 YLS
+						*(p_bMove + 3 + k * 2) = m >> 8;
+						*(p_bMove + 3 + k * 2 + 1) = m;
+					}
+				}
+				else
+				{
+					p_wRead_u8 = GprsPar; // GprsPar区按字节进行读取
+					p_wRead_u8 += Lw_Com1RegAddr - 63000;
+					p_bMove = Txd1Buffer;
+					for (k = 0; k < Rcv1Buffer[5]; k++) // 填充查询内容
+					{
+						m = *(p_wRead_u8 + k);
+						*(p_bMove + 3 + k * 2) = 0; // 高字节填充0
+						*(p_bMove + 3 + k * 2 + 1) = m;
+					}
+				}
+
+				Lw_Txd1ChkSum = CRC16((u8 *)Txd1Buffer, Txd1Buffer[2] + 3);
+				Txd1Buffer[Txd1Buffer[2] + 3] = Lw_Txd1ChkSum >> 8; // /256
+				Txd1Buffer[Txd1Buffer[2] + 4] = Lw_Txd1ChkSum;		// 低位字节
+				Cw_Txd1Max = Txd1Buffer[2] + 5;
+				//
+				B_Com1Cmd03 = 0;
+				Cw_Txd1 = 0;
+				// RS185_CON=1;
+				USART_SendData(USART1, Txd1Buffer[Cw_Txd1++]);
+				USART_ITConfig(USART1, USART_IT_TC, ENABLE); // 开始发送.
+			}
+			else if (Lw_Com1Addr >= STM32_RPAR_ADDRESS && Lw_Com1Addr < GPRS_WRPAR_ADDRESS)
+			{
+				w_ZhuanFaAdd = Lw_Com1Addr;
+				m = Rcv1Buffer[4];
+				m = (m << 8) + Rcv1Buffer[5];
+				w_ZhuanFaData = m;
+
+				F_ModeParLora = 2; // 在LoRa主动发送中，=2，转发出去，查询某一台从机的参数
+				B_Com1Cmd03 = 0;
+			}
 		}
 		//
 		else if (B_Com1Cmd16 || B_Com1Cmd06) // 16预置多寄存器
@@ -469,69 +491,108 @@ void Com1_SlaveSend(void) // 串口1从机发送
 			if (B_Com1Cmd06) // 预置单个
 			{
 				j = Rcv1Buffer[2];
-				Lw_Com1Addr = (j << 8) + Rcv1Buffer[3];
+				Lw_Com1RegAddr = (j << 8) + Rcv1Buffer[3];
 
-				if (Lw_Com1Addr < STM32_RPAR_ADDRESS)
+				if (Lw_Com1RegAddr < 60000) // 如果地址在10000以下，就通过LoRa转发到下位机
 				{
-					w_ZhuanFaAdd = Lw_Com1Addr;
+					w_ZhuanFaAdd = Lw_Com1RegAddr;
 					m = Rcv1Buffer[4];
 					m = (m << 8) + Rcv1Buffer[5];
-					//				*(p_wTarget + Lw_Com2RegAddr) = m;
 					w_ZhuanFaData = m;
-					F_ModeParLora = 1;
+
+					if (Lw_Com1RegAddr < 10000) // 如果地址在10000以下，就通过LoRa转发到下位机
+						F_ModeParLora = 1;		// 在LoRa主动发送中，=1，转发出去，写某一台从机的启停、设定压力、设定频率这3个参数
+					else if (Lw_Com1RegAddr >= 10000 && Lw_Com1RegAddr < 60000)
+						F_ModeParLora = 3; // 在LoRa主动发送中，=3，转发出去，写某一台从机的设定参数
 				}
-				// 添加修改ZGP331本身参数功能
-				else if (Lw_Com1Addr >= STM32_RPAR_ADDRESS && Lw_Com1Addr < GPRS_WRPAR_ADDRESS) // 如果地址在10000以上，就修改ZGP331本身的参数
+				else if (Lw_Com1RegAddr >= 60000) // 如果地址在60000以上，就修改ZGP331本身的参数
 				{
 					// 这是预置本机的 设定参数；
-					p_wTarget = AddressConvert(Lw_Com1Addr);
-					m = Rcv1Buffer[4];
-					// w_ParLst[Lw_Com3RegAddr] = (m << 8) + Txd2Buffer[5];
-					*p_wTarget = (m << 8) + Rcv1Buffer[5];
-					B_ForceSavPar = 1; // 保存参数
-				}
-				else if (Lw_Com1Addr >= GPRS_WRPAR_ADDRESS)
-				{
-					p_wTarget_u8 = GprsPar;
-					p_wTarget_u8 += Lw_Com1Addr - GPRS_WRPAR_ADDRESS;
-					*p_wTarget_u8 = Rcv1Buffer[5];
+					if (Lw_Com1RegAddr < 63000)
+					{
+						p_wTarget = AddressConvert_Com3(Lw_Com1RegAddr);
+						m = Rcv1Buffer[4];
+						*p_wTarget = (m << 8) + Rcv1Buffer[5]; // 修改参数
+					}
+					else if (Lw_Com1RegAddr >= 63000 && Lw_Com1RegAddr < 64000)
+					{
+						p_wTarget_u8 = GprsPar; // GprsPar区按字节进行写
+						p_wTarget_u8 += Lw_Com1RegAddr - 63000;
+						*p_wTarget_u8 = Rcv1Buffer[5]; // 修改参数
+					}
+
+					// ZCL 2021.7.10  06指令：收到的 和  返回的 是一样的。
+					Txd1Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址Pw_EquipmentNo
+					Txd1Buffer[1] = Rcv1Buffer[1];		// 功能码			ZCL 2019.3.12 这里比较特殊，用的Rcv1Buffer
+					Txd1Buffer[2] = Rcv1Buffer[2];		// 　
+					Txd1Buffer[3] = Rcv1Buffer[3];		//
+					Txd1Buffer[4] = Rcv1Buffer[4];		//
+					Txd1Buffer[5] = Rcv1Buffer[5];		//
+
+					Lw_Txd1ChkSum = CRC16(Txd1Buffer, 6);
+					Txd1Buffer[6] = Lw_Txd1ChkSum >> 8; // /256
+					Txd1Buffer[7] = Lw_Txd1ChkSum;		// 低位字节
+					Cw_Txd1Max = 8;
+					//
+					B_Com1Cmd06 = 0;
+					Cw_Txd1 = 0;
+					// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
+					B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
 				}
 			}
 
 			else if (B_Com1Cmd16) // 预置多个
 			{
-				if (Rcv1Buffer[6] == 2)
+				if (Rcv1Buffer[5] <= 30) // ZCL 2021.11.17  限制数量
 				{
-					m = Rcv1Buffer[2];
-					m = (m << 8) + Rcv1Buffer[3];
-					w_ZhuanFaAdd = m;
+					p_bGen = Rcv1Buffer;
+					j = Rcv1Buffer[2];
+					Lw_Com1RegAddr = (j << 8) + Rcv1Buffer[3];
 
-					m = Rcv1Buffer[7];
-					m = (m << 8) + Rcv1Buffer[8];
-					w_ZhuanFaData = m;
+					if (Lw_Com1RegAddr >= 60000) // 如果地址在60000以上，就修改ZGP331本身的参数
+					{
+						// 这是预置本机的 设定参数；
+						if (Lw_Com1RegAddr < 63000)
+						{
+							p_wTarget = AddressConvert_Com3(Lw_Com1RegAddr);
 
-					F_ModeParLora = 1;
+							for (k = 0; k < Rcv1Buffer[5]; k++) // Rcv0Buffer[5]=字数
+							{
+								m = *(p_bGen + 7 + k * 2);
+								n = *(p_bGen + 7 + k * 2 + 1);
+								*(p_wTarget + Lw_Com1RegAddr + k) = (m << 8) + n;
+							}
+						}
+						else if (Lw_Com1RegAddr >= 63000 && Lw_Com1RegAddr < 64000)
+						{
+							p_wTarget_u8 = GprsPar; // GprsPar区按字节进行写
+							p_wTarget_u8 += Lw_Com1RegAddr - 63000;
+
+							for (k = 0; k < Rcv1Buffer[5]; k++) // Rcv0Buffer[5]=字数
+							{
+								*(p_wTarget_u8 + k) = *(p_bGen + 8 + k * 2); // 修改参数
+							}
+						}
+					}
 				}
-				else
-					F_ModeParLora = 0;
-			}
 
-			// -------------------------
-			// 返回数据
-			// 2015.7.11 加入判断，因为设定DSP参数时，如果原先已经有设定在运行，丢弃。
-			if (B_Com1Cmd16 || B_Com1Cmd06)
-			{
+				// -------------------------
+				// 返回数据
+				// 2015.7.11 加入判断，因为设定DSP参数时，如果原先已经有设定在运行，丢弃。
 				Txd1Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址
 				Txd1Buffer[1] = Rcv1Buffer[1];		// 功能码
 				Txd1Buffer[2] = Rcv1Buffer[2];		// 开始地址高位字节
 				Txd1Buffer[3] = Rcv1Buffer[3];		// 开始地址低位字节
-				Txd1Buffer[4] = Rcv1Buffer[4];		// 寄存器数量高位
-				Txd1Buffer[5] = Rcv1Buffer[5];		// 寄存器数量低位
-				// if (j == 0)					   // 如果不能被正常预置，返回FFFF zcl
-				// {
-				// 	Txd1Buffer[4] = 0xff; // 寄存器数量高位、预置数据
-				// 	Txd1Buffer[5] = 0xff; // 寄存器数量低位、预置数据
-				// }
+				if (Rcv1Buffer[5] <= 30)			// ZCL 2021.11.17  限制数量
+				{
+					Txd1Buffer[4] = Rcv1Buffer[4]; //
+					Txd1Buffer[5] = Rcv1Buffer[5]; //
+				}
+				else
+				{
+					Txd1Buffer[4] = 0xff; // 如果超了范围，就返回0xff
+					Txd1Buffer[5] = 0xff; //
+				}
 				Lw_Txd1ChkSum = CRC16((u8 *)Txd1Buffer, 6);
 				Txd1Buffer[6] = Lw_Txd1ChkSum >> 8; // /256
 				Txd1Buffer[7] = Lw_Txd1ChkSum;		// 低位字节
@@ -542,8 +603,8 @@ void Com1_SlaveSend(void) // 串口1从机发送
 				// RS185_CON=1;
 				USART_SendData(USART1, Txd1Buffer[Cw_Txd1++]);
 				USART_ITConfig(USART1, USART_IT_TC, ENABLE); // 开始发送.
-			}
-		} // 06、16预置寄存器 结束
+			} // 06、16预置寄存器 结束
+		}
 	}
 	else if (Pw_EquipmentType == 1 || Pw_EquipmentType == 2) // 变频电机或高压电机
 	{

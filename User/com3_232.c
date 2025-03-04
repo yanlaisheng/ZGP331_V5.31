@@ -138,7 +138,7 @@
 			注：如果使用仿真器，没有让B_LockCodeOK=1，则密码不对，会导致串口数据发给模块，DATA灯就一直亮。！！！
 			必要时可以把密码保护取消掉！
 
-	15. 备注：修改程序后记得修改com0_232.c中  远程查询GPRS模块的版本号
+	15. 备注：修改程序后记得修改com3_232.c中  远程查询GPRS模块的版本号
 			uc8 DtuProgVersion[7]="1.31.00";					//7 DTU程序版本:70
 			uc8 DtuProgMakeDate[8]="20160527";				//8 DTU程序生成日期:71
 
@@ -1535,7 +1535,7 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 					B_OtherCmd = 0;
 					B_DoWithData = 1;
 				}
-				else if (GprsPar[EnDDP0Base + ChannelNo] == 0 && ReceiveGPRSBuf[0] == 0x02)
+				else if (GprsPar[EnDDP0Base + ChannelNo] == 0 && ReceiveGPRSBuf[0] == Pw_LoRaEquipmentNo)
 				{
 					B_DoWithData = 1;
 				}
@@ -1885,11 +1885,6 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 
 							// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
 							B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
-
-							// RS485_CON=1;
-							// 2010.8.5 周成磊 TXE改成TC，一句改为两句
-							// USART_SendData(USART2,Txd2Buffer[Cw_Txd2++]);
-							// USART_ITConfig(USART2, USART_IT_TC, ENABLE);				// 开始发送.
 						}
 
 						// ZCL 2019.3.12 今后添加其他指令  2021.11.17
@@ -1915,31 +1910,6 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 
 							// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
 							B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
-
-							// RS485_CON=1;
-							// 2010.8.5 周成磊 TXE改成TC，一句改为两句
-							// USART_SendData(USART2,Txd2Buffer[Cw_Txd2++]);
-							// USART_ITConfig(USART2, USART_IT_TC, ENABLE);				// 开始发送.
-
-							// if (B_Com2Cmd06) // 预置单个
-
-							// else if (B_Com2Cmd16) // 预置多个
-							// {
-							// 	if (Rcv2Buffer[6] == 2)
-							// 	{
-							// 		m = Rcv2Buffer[2];
-							// 		m = (m << 8) + Rcv2Buffer[3];
-							// 		w_ZhuanFaAdd = m;
-
-							// 		m = Rcv2Buffer[7];
-							// 		m = (m << 8) + Rcv2Buffer[8];
-							// 		w_ZhuanFaData = m;
-
-							// 		F_ModeParLora = 1;
-							// 	}
-							// 	else
-							// 		F_ModeParLora = 0;
-							// }
 						}
 
 						// ZCL 2019.3.12 今后添加其他指令  2021.11.17
@@ -1966,11 +1936,6 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 
 							// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
 							B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
-
-							// RS485_CON=1;
-							// 2010.8.5 周成磊 TXE改成TC，一句改为两句
-							// USART_SendData(USART2,Txd2Buffer[Cw_Txd2++]);
-							// USART_ITConfig(USART2, USART_IT_TC, ENABLE);				// 开始发送.
 						}
 					}
 
@@ -1980,9 +1945,6 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 						Cw_Txd2Max = len2;
 						Cw_Txd2 = 0;
 
-						// RS485_CON=1;		//2013.9.2
-						//  2010.8.5 周成磊 TXE改成TC，一句改为两句
-						// USART_ITConfig(USART2, USART_IT_TXE, ENABLE);				// 开始发送.
 						USART_ITConfig(USART2, USART_IT_TC, ENABLE); // 开始发送.
 						USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
 					}
@@ -2005,7 +1967,6 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 					Cw_Txd2 = 0;
 					RS485_CON = 1; // 2013.9.2
 					// 2010.8.5 周成磊 TXE改成TC，一句改为两句
-					// USART_ITConfig(USART2, USART_IT_TXE, ENABLE);				// 开始发送.
 					USART_ITConfig(USART2, USART_IT_TC, ENABLE); // 开始发送.
 					USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
 				}
@@ -2511,24 +2472,6 @@ void Com3_SlaveSend(void) // 串口3从机发送
 
 						else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
 							Gprs_TX_Fill(Txd3TmpBuffer, Cw_Txd3TmpMax); // 填充数据 ZCL 2019.3.12
-
-						// YLS 2024.03.21 对要发送到的数据，进行串口输出
-						//						if (F_GprsTransToCom) //|| F_GprsMasterToCom	YLS 2023.03.28
-						//						{
-						//							if (Cw_Txd3Max >= 512)
-						//								Cw_Txd3Max = 500; //
-
-						//							for (k = 0; k < Cw_Txd3Max; k++)
-						//							{
-						//								Txd2Buffer[k] = Txd3Buffer[k]; // 串口3(GPRS模块)发送到串口2
-						//							}
-						//							Cw_Txd2Max = Cw_Txd3Max;
-						//							Cw_Txd2 = 0;
-						//							RS485_CON = 1; // 2013.9.2
-						//							USART_ITConfig(USART2, USART_IT_TC, ENABLE); // 开始发送.
-						//							USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
-						//							Delay_MS(1000);	//延时10ms
-						//						}
 					}
 				}
 				//=0，透明协议

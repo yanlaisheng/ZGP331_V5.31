@@ -7926,7 +7926,7 @@ void Menu_DspSetPar50(void) // 画面 DSP设定参数
 	}
 }
 
-void Menu_LoRaMasteSetPar1(void) // 画面 LoRa设定参数
+void Menu_LoRaMasteSetPar1(void) // 画面 LoRa设定参数，页面号：543
 {
 	if (Lw_SavePageNo != Lw_PageNo)
 	{
@@ -7941,29 +7941,27 @@ void Menu_LoRaMasteSetPar1(void) // 画面 LoRa设定参数
 		LCD12864_String(0x90, "恢复LoRa");
 		LCD12864_String(0x97, "  ");
 		// 第三行
-		LCD12864_String(0x88, "主从机设定      ");
+		LCD12864_String(0x88, "本机地址        ");
 		LCD12864_String(0x8D, "  ");
 		// 第四行
-		LCD12864_String(0x98, "本机地址        ");
+		LCD12864_String(0x98, "                ");
 		LCD12864_String(0x9F, "  ");
 	}
 
-	// ZCL 2019.
-	ModParNum(4);
+	ModParNum(3);
 	DispMod_Par(0x84, 0x05, 0x00, &w_GprsModPar, 4, F_ModPar1);		// ZCL 2019.4.2
 	DispMod_Par(0x94, 0x05, 0x00, &w_GprsParInitial, 4, F_ModPar2); // ZCL 2019.4.2
-	DispMod_Par(0x8D, 0x03, 0x00, &Pw_LoRaMasterSlaveSel, 4, F_ModPar3);
-	DispMod_Par(0x9D, 0x03, 0x00, &Pw_LoRaEquipmentNo, 4, F_ModPar4);
+	// DispMod_Par(0x8D, 0x03, 0x00, &Pw_LoRaMasterSlaveSel, 4, F_ModPar3);
+	DispMod_Par(0x8C, 0x05, 0x00, &Pw_LoRaEquipmentNo, 4, F_ModPar3);
+	// DispMod_Par(0x9D, 0x03, 0x00, &Pw_LoRaEquipmentNo, 4, F_ModPar4);
 	//
 	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-	// 写参数 2015.9.1
 
 	// 读参数
 	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 }
 
-void Menu_LoRaSetPar1(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar1(void) // 画面 LoRa设定参数，页面号：544
 {
 	if (Lw_SavePageNo != Lw_PageNo)
 	{
@@ -7993,13 +7991,11 @@ void Menu_LoRaSetPar1(void) // 画面 LoRa设定参数
 	DispMod_Par(0x9D, 0x03, 0x00, &Pw_LoRaModule4Add, 4, F_ModPar4);
 	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-	// 写参数 2015.9.1
-
 	// 读参数
 	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 }
 
-void Menu_LoRaSetPar2(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar2(void) // 画面 LoRa设定参数，页面号：545
 {
 	if (Pw_EquipmentType == 0 || Pw_EquipmentType == 2) // 双驱泵或高压电机
 	{
@@ -8031,8 +8027,6 @@ void Menu_LoRaSetPar2(void) // 画面 LoRa设定参数
 		DispMod_Par(0x9D, 0x03, 0x00, &Pw_LoRaModule8Add, 4, F_ModPar4);
 		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-		// 写参数 2015.9.1
-
 		// 读参数
 		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 	}
@@ -8067,14 +8061,12 @@ void Menu_LoRaSetPar2(void) // 画面 LoRa设定参数
 		DispMod_Par(0x9D, 0x03, 0x00, &Pw_ScrLoRaSend2, 4, F_ModPar4);
 		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-		// 写参数 2015.9.1
-
 		// 读参数
 		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 	}
 }
 
-void Menu_LoRaSetPar3(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar3(void) // 画面 LoRa设定参数，页面号：546
 {
 	if (Pw_EquipmentType == 0 || Pw_EquipmentType == 2) // 双驱泵或高压电机
 	{
@@ -8142,14 +8134,12 @@ void Menu_LoRaSetPar3(void) // 画面 LoRa设定参数
 		DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetSpreadingFactor, 4, F_ModPar4);
 		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-		// 写参数 2015.9.1
-
 		// 读参数
 		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 	}
 }
 
-void Menu_LoRaSetPar4(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar4(void) // 画面 LoRa设定参数，页面号：547
 {
 	if (Pw_EquipmentType == 0 || Pw_EquipmentType == 2) // 双驱泵或高压电机
 	{
@@ -8180,8 +8170,6 @@ void Menu_LoRaSetPar4(void) // 画面 LoRa设定参数
 		DispMod_Par(0x8C, 0x05, 0x00, &Pw_LoRaSetSignalBW, 4, F_ModPar3); // 类型4，在DispMod_Par()中没有用 ZCL 2018.8.3
 		DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetSpreadingFactor, 4, F_ModPar4);
 		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-		// 写参数 2015.9.1
 
 		// 读参数
 		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
@@ -8216,198 +8204,81 @@ void Menu_LoRaSetPar4(void) // 画面 LoRa设定参数
 		DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetRxSingleOn, 4, F_ModPar4);
 		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-		// 写参数 2015.9.1
-
 		// 读参数
 		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 	}
 }
 
-void Menu_LoRaSetPar5(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar5(void) // 画面 LoRa设定参数，页面号：548
 {
-	if (Pw_EquipmentType == 0) // 双驱泵
+	if (Lw_SavePageNo != Lw_PageNo)
 	{
-		if (Lw_SavePageNo != Lw_PageNo)
-		{
-			Lw_SavePageNo = Lw_PageNo;
-			EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
+		Lw_SavePageNo = Lw_PageNo;
+		EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
 
-			// LCD12864_ClrText();          //清屏
-			// 第一行
-			LCD12864_String(0x80, "发送超时      ");
-			LCD12864_String(0x87, "ms");
-			// 第二行
-			LCD12864_String(0x90, "接收超时      ");
-			LCD12864_String(0x97, "ms");
-			// 第三行
-			LCD12864_String(0x88, "空中速率      ");
-			LCD12864_String(0x8F, "kb");
-			// 第四行
-			LCD12864_String(0x98, "                 ");
-			LCD12864_String(0x9F, "  "); // ZCL 2018.7.30 原先0x97不好，这里因为(01)占2个字，应该用0x96
-		}
-
-		ModParNum(2);
-		// 显示和修改参数
-		DispMod_Par(0x84, 0x05, 0x00, &Pw_LoRaSetTxPacketTimeOut, 4, F_ModPar1);
-		DispMod_Par(0x94, 0x05, 0x00, &Pw_LoRaSetRxPacketTimeOut, 4, F_ModPar2);
-		DispMod_Par(0x8C, 0x04, 0x02, &w_LoRaDateRate, 5, 0); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
-		// DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetRxSingleOn, 4, F_ModPar4);
-		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-		// 写参数 2015.9.1
-
-		// 读参数
-		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
+		// LCD12864_ClrText();          //清屏
+		// 第一行
+		LCD12864_String(0x80, "发送超时      ");
+		LCD12864_String(0x87, "ms");
+		// 第二行
+		LCD12864_String(0x90, "接收超时      ");
+		LCD12864_String(0x97, "ms");
+		// 第三行
+		LCD12864_String(0x88, "空中速率      ");
+		LCD12864_String(0x8F, "kb");
+		// 第四行
+		LCD12864_String(0x98, "                 ");
+		LCD12864_String(0x9F, "  "); // ZCL 2018.7.30 原先0x97不好，这里因为(01)占2个字，应该用0x96
 	}
-	else if (Pw_EquipmentType == 1) // 变频电机
-	{
-		if (Lw_SavePageNo != Lw_PageNo)
-		{
-			Lw_SavePageNo = Lw_PageNo;
-			EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
 
-			// LCD12864_ClrText();          //清屏
-			// 第一行
-			LCD12864_String(0x80, "FreqHopOn ");
-			LCD12864_String(0x87, "  ");
-			// 第二行
-			LCD12864_String(0x90, "HopPeriod ");
-			LCD12864_String(0x97, "  ");
-			// 第三行
-			LCD12864_String(0x88, "PayLoadLen");
-			LCD12864_String(0x8F, "  ");
-			// 第四行
-			LCD12864_String(0x98, "                ");
-			LCD12864_String(0x9F, "  ");
-		}
+	ModParNum(2);
+	// 显示和修改参数
+	DispMod_Par(0x84, 0x05, 0x00, &Pw_LoRaSetTxPacketTimeOut, 4, F_ModPar1);
+	DispMod_Par(0x94, 0x05, 0x00, &Pw_LoRaSetRxPacketTimeOut, 4, F_ModPar2);
+	DispMod_Par(0x8C, 0x04, 0x02, &w_LoRaDateRate, 5, 0); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
+	// DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetRxSingleOn, 4, F_ModPar4);
+	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-		ModParNum(3);
-		// 显示和修改参数
-		DispMod_Par(0x85, 0x03, 0x00, &Pw_LoRaSetFreqHopOn, 4, F_ModPar1);
-		DispMod_Par(0x95, 0x03, 0x00, &Pw_LoRaSetHopPeriod, 4, F_ModPar2);
-		DispMod_Par(0x8D, 0x03, 0x00, &Pw_LoRaSetPayLoadLength, 4, F_ModPar3); // 类型4，在DispMod_Par()中没有用 ZCL 2018.8.3
-		// DispMod_Par(0x9D, 0x03,0x00, &Pw_LoRaSetRxSingleOn,4, F_ModPar4);
-		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-		// 写参数 2015.9.1
-
-		// 读参数
-		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
-	}
-	else if (Pw_EquipmentType == 2) // 高压电机
-	{
-		if (Lw_SavePageNo != Lw_PageNo)
-		{
-			Lw_SavePageNo = Lw_PageNo;
-			EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
-
-			// LCD12864_ClrText();          //清屏
-			// 第一行
-			LCD12864_String(0x80, "错误编码");
-			LCD12864_String(0x87, "  ");
-			// 第二行
-			LCD12864_String(0x90, "CrcOn   ");
-			LCD12864_String(0x97, "  "); // ZCL 2018.7.30 原先0x97不好，这里因为(01)占2个字，应该用0x96
-			// 第三行
-			LCD12864_String(0x88, "隐式报头");
-			LCD12864_String(0x8F, "  ");
-			// 第四行
-			LCD12864_String(0x98, "接收单个");
-			LCD12864_String(0x9F, "  "); // ZCL 2018.7.30 原先0x97不好，这里因为(01)占2个字，应该用0x96
-		}
-
-		ModParNum(4);
-		// 显示和修改参数
-		DispMod_Par(0x84, 0x05, 0x00, &Pw_LoRaSetErrorCoding, 4, F_ModPar1);
-		DispMod_Par(0x94, 0x05, 0x00, &Pw_LoRaSetCrcOn, 4, F_ModPar2);
-		DispMod_Par(0x8C, 0x05, 0x00, &Pw_LoRaSetImplicitHeaderOn, 4, F_ModPar3); // 类型4，在DispMod_Par()中没有用 ZCL 2018.8.3
-		DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetRxSingleOn, 4, F_ModPar4);
-		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-		// 写参数 2015.9.1
-
-		// 读参数
-		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
-	}
+	// 读参数
+	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 }
 
-void Menu_LoRaSetPar6(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar6(void) // 画面 LoRa设定参数，页面号：549
 {
-	// if (Pw_EquipmentType == 0 || Pw_EquipmentType == 2) // 双驱泵或高压电机
+	if (Lw_SavePageNo != Lw_PageNo)
 	{
-		if (Lw_SavePageNo != Lw_PageNo)
-		{
-			Lw_SavePageNo = Lw_PageNo;
-			EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
+		Lw_SavePageNo = Lw_PageNo;
+		EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
 
-			// LCD12864_ClrText();          //清屏
-			// 第一行
-			LCD12864_String(0x80, "重启间隔      ");
-			LCD12864_String(0x87, "分");
-			// 第二行
-			LCD12864_String(0x90, "控制信息      ");
-			LCD12864_String(0x97, "  ");
-			// 第三行
-			LCD12864_String(0x88, "设备类型      ");
-			LCD12864_String(0x8F, "  ");
-			// 第四行
-			// LCD12864_String(0x98, "(0双驱，1=变频) ");
-			LCD12864_String(0x98, "0=双驱1=变频2=高压");
-			// LCD12864_String(0x9F, "  ");
-		}
-
-		ModParNum(3);
-		// 显示和修改参数
-		DispMod_Par(0x84, 0x05, 0x00, &Pw_RebootInterval, 4, F_ModPar1);
-		DispMod_Par(0x94, 0x01, 0x00, &Pw_ConsoleInfo, 4, F_ModPar2);
-		DispMod_Par(0x8C, 0x01, 0x00, &Pw_EquipmentType, 5, F_ModPar3); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
-		// DispMod_Par(0x9D, 0x03, 0x00, &Pw_ConsoleInfo, 4, F_ModPar4);
-		S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-		// 写参数 2015.9.1
-
-		// 读参数
-		ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
+		// LCD12864_ClrText();          //清屏
+		// 第一行
+		LCD12864_String(0x80, "重启间隔      ");
+		LCD12864_String(0x87, "分");
+		// 第二行
+		LCD12864_String(0x90, "控制信息      ");
+		LCD12864_String(0x97, "  ");
+		// 第三行
+		LCD12864_String(0x88, "设备类型      ");
+		LCD12864_String(0x8F, "  ");
+		// 第四行
+		// LCD12864_String(0x98, "(0双驱，1=变频) ");
+		LCD12864_String(0x98, "0=双驱1=变频2=高压");
+		// LCD12864_String(0x9F, "  ");
 	}
-	// else // 变频电机
-	// {
-	// 	if (Lw_SavePageNo != Lw_PageNo)
-	// 	{
-	// 		Lw_SavePageNo = Lw_PageNo;
-	// 		EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
 
-	// 		// LCD12864_ClrText();          //清屏
-	// 		// 第一行
-	// 		LCD12864_String(0x80, "发送超时      ");
-	// 		LCD12864_String(0x87, "ms");
-	// 		// 第二行
-	// 		LCD12864_String(0x90, "接收超时      ");
-	// 		LCD12864_String(0x97, "ms");
-	// 		// 第三行
-	// 		LCD12864_String(0x88, "空中速率      ");
-	// 		LCD12864_String(0x8F, "kb");
-	// 		// 第四行
-	// 		LCD12864_String(0x98, "重启间隔      ");
-	// 		LCD12864_String(0x9F, "分");
-	// 	}
+	ModParNum(3);
+	// 显示和修改参数
+	DispMod_Par(0x84, 0x05, 0x00, &Pw_RebootInterval, 4, F_ModPar1);
+	DispMod_Par(0x94, 0x01, 0x00, &Pw_ConsoleInfo, 4, F_ModPar2);
+	DispMod_Par(0x8C, 0x01, 0x00, &Pw_EquipmentType, 5, F_ModPar3); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
+	// DispMod_Par(0x9D, 0x03, 0x00, &Pw_ConsoleInfo, 4, F_ModPar4);
+	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
-	// 	ModParNum(4);
-	// 	// 显示和修改参数
-	// 	DispMod_Par(0x84, 0x05, 0x00, &Pw_LoRaSetTxPacketTimeOut, 4, F_ModPar1);
-	// 	DispMod_Par(0x94, 0x05, 0x00, &Pw_LoRaSetRxPacketTimeOut, 4, F_ModPar2);
-	// 	DispMod_Par(0x8C, 0x04, 0x02, &w_LoRaDateRate, 5, F_ModPar3);	 // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
-	// 	DispMod_Par(0x9C, 0x05, 0x00, &Pw_RebootInterval, 4, F_ModPar4); //=0，通用协议；=1，舟山特殊协议（通道3和通道4）
-	// 	S_DisplayPar = 0;												 // 显示参数结束，清零S_DisplayPar，再次延时
-
-	// 	// 写参数 2015.9.1
-
-	// 	// 读参数
-	// 	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
-	// }
+	// 读参数
+	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
 }
 
-void Menu_LoRaSetPar7(void) // 画面 LoRa设定参数
+void Menu_LoRaSetPar7(void) // 画面 LoRa设定参数，页面号：550
 {
 	if (Lw_SavePageNo != Lw_PageNo)
 	{
@@ -8436,8 +8307,6 @@ void Menu_LoRaSetPar7(void) // 画面 LoRa设定参数
 	DispMod_Par(0x8C, 0x05, 0x00, &w_ScrWriteDate, 1, 0);
 	DispMod_Par(0x9C, 0x05, 0x00, &w_S_M35, 1, 0);
 	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
-
-	// 写参数 2015.9.1
 
 	// 读参数
 	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
@@ -8891,7 +8760,7 @@ void Menu_Dsp1ReadPar3(void) // 画面 DSP读参数
 
 			// LCD12864_ClrText();          //清屏
 			// 第一行
-			LCD12864_String(0x80, "220 计数器");
+			LCD12864_String(0x80, "420 计数器");
 			LCD12864_String(0x87, "  ");
 
 			// 第二行
@@ -9584,7 +9453,7 @@ void Menu_Dsp2ReadPar3(void) // 画面 DSP读参数
 
 			// LCD12864_ClrText();          //清屏
 			// 第一行
-			LCD12864_String(0x80, "220 计数器");
+			LCD12864_String(0x80, "420 计数器");
 			LCD12864_String(0x87, "  ");
 
 			// 第二行
@@ -10187,7 +10056,7 @@ void Menu_Dsp3ReadPar3(void) // 画面 DSP读参数
 
 			// LCD12864_ClrText();          //清屏
 			// 第一行
-			LCD12864_String(0x80, "220 计数器");
+			LCD12864_String(0x80, "420 计数器");
 			LCD12864_String(0x87, "  ");
 
 			// 第二行
@@ -10790,7 +10659,7 @@ void Menu_Dsp4ReadPar3(void) // 画面 DSP读参数
 
 			// LCD12864_ClrText();          //清屏
 			// 第一行
-			LCD12864_String(0x80, "220 计数器");
+			LCD12864_String(0x80, "420 计数器");
 			LCD12864_String(0x87, "  ");
 
 			// 第二行
@@ -11324,7 +11193,7 @@ void Menu_Dsp5ReadPar3(void) // 画面 DSP读参数
 
 			// LCD12864_ClrText();          //清屏
 			// 第一行
-			LCD12864_String(0x80, "220 计数器");
+			LCD12864_String(0x80, "420 计数器");
 			LCD12864_String(0x87, "  ");
 
 			// 第二行
@@ -13841,7 +13710,7 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 		}
 	}
 
-	if (Pw_EquipmentType == 0) // 双驱泵
+	if (Pw_EquipmentType < 3) // 双驱泵、变频电机、高压电机
 	{
 		// 3.按键改变画面的处理
 		if (S_ModParStatus == 0)
@@ -13849,168 +13718,11 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 			if (Key_Pressed == 1 && Key_Data != 0 && F_KeyExec == 0)
 			{
 				F_KeyExec = 1;
-
-				// ZCL 2019.3.8 LORA从机
-				if (Pw_LoRaMasterSlaveSel == 0) // 下面是原先的内容
-				{
-
-					// zcl 2014.3.26 >=3画面后，必须口令正确才可以显示 && (Lw_PageNo<4 || Pw_ModPar==10000 || Lw_PageNo>4 )
-					if (Key_Data == DOWNKEY && Lw_PageNo < 999) // Lw_PageNo<11  ZCL 2018.8.28 308
-					{
-						Lw_PageNo++;
-
-						if (Pw_ScrMenuMode == 0)
-						{
-							if (Lw_PageNo == 20 + 1) // ZCL 2018.8.21 18;  2019.8.7 19
-								Lw_PageNo = 100;
-							else if (Lw_PageNo == 135 + 1) // ZCL 2018.8.21 125;		2019.8.31 133
-								Lw_PageNo = 199;		   // ZCL 2018.8.28 200;
-							else if (Lw_PageNo == 207 + 1) // ZCL 2018.8.28 =0，控制器模式
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310) // ZCL 2019.4.15 定频有重复，310跳过
-								Lw_PageNo = 543;
-
-							// ZCL 2018.4.19 跳过 7: Menu_StmReadPar8
-							else if (Lw_PageNo == 7)
-								Lw_PageNo = 8;
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 546;
-							else if (Lw_PageNo == 550 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-						}
-
-						else if (Pw_ScrMenuMode == 1)
-						{
-							if (Lw_PageNo == 221 + 1) // ZCL 2019.3.19 =1，变频器模式
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310 + 1)
-								Lw_PageNo = 543; // ZCL 2019.3.23
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 546;
-							else if (Lw_PageNo == 550 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-
-							else if (Lw_PageNo == 210) // ZCL 2019.4.15 跳过210：Menu_StmReadPar8_NoUse()
-								Lw_PageNo = 211;
-						}
-
-						else if (Pw_ScrMenuMode == 2) // ZCL 2019.3.19 =11，DCM220变频器模式
-						{
-							if (Lw_PageNo == 207 + 1)
-								Lw_PageNo = 250;
-							else if (Lw_PageNo == 261 + 1)
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310 + 1)
-								Lw_PageNo = 330;
-							else if (Lw_PageNo == 331 + 1) // ZCL 2019.3.23
-								Lw_PageNo = 543;
-							//
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 546;
-							else if (Lw_PageNo == 550 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-						}
-					}
-
-					else if (Key_Data == UPKEY && Lw_PageNo > 0)
-					{
-						Lw_PageNo--;
-
-						if (Pw_ScrMenuMode == 0) // ZCL 2018.8.28 =0，控制器模式
-						{
-							if (Lw_PageNo == 543 - 1) // ZCL 2019.4.2  544
-								Lw_PageNo = 310 - 1;  // ZCL 2019.4.15 定频有重复，310跳过
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 207;
-							else if (Lw_PageNo == 199 - 1) // ZCL 2018.8.28 =0，控制器模式
-								Lw_PageNo = 135;		   // ZCL 2019.8.31 133
-							else if (Lw_PageNo == 100 - 1)
-								Lw_PageNo = 20; // ZCL 2019.8.7
-
-							// ZCL 2018.4.19 可以跳过 7: Menu_StmReadPar8
-							// ZCL 2019.4.11 备注：跳过的页，直接写数字，不用+1，-1（第7页，第544页跳过）
-							else if (Lw_PageNo == 7)
-								Lw_PageNo = 6;
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 543;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 551 - 1;
-						}
-
-						else if (Pw_ScrMenuMode == 1) // ZCL 2019.3.19 =1，变频器模式
-						{
-							if (Lw_PageNo == 543 - 1) // ZCL 2019.4.2  544
-								Lw_PageNo = 310;
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 221;
-							else if (Lw_PageNo == 200 - 1)
-								Lw_PageNo = 200;
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 543;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 551 - 1;
-							else if (Lw_PageNo == 210) // ZCL 2019.4.15 跳过210：Menu_StmReadPar8_NoUse()
-								Lw_PageNo = 209;
-						}
-
-						else if (Pw_ScrMenuMode == 2) // ZCL 2019.3.19 =11，DCM220变频器模式
-						{
-							if (Lw_PageNo == 543 - 1) // ZCL 2019.3.23
-								Lw_PageNo = 331;
-							else if (Lw_PageNo == 330 - 1)
-								Lw_PageNo = 310;
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 261;
-							else if (Lw_PageNo == 250 - 1)
-								Lw_PageNo = 207;
-							else if (Lw_PageNo == 200 - 1)
-								Lw_PageNo = 200;
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 543;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 551 - 1;
-						}
-					}
-
-					else if (Key_Data == ESCKEY) // CANCEL键，返回
-						Lw_PageNo = 0;
-					else if (Key_Data == OKKEY) // ENTER键  进入参数修改状态
-					{
-						S_ModParStatus = 1; // 进入参数修改状态
-						ModParNo++;			// 修改参数序号++
-					}
-					else if (Key_Data == RIGHTKEY) // 右键
-					{
-						B_RightKeyCount++;
-					}
-					else if (Key_Data == LEFTKEY) // 左键
-					{
-						B_LeftKeyCount++;
-					}
-				}
-
-				// ZCL 2019.3.8 新加 LORA主机
-				else if (Pw_LoRaMasterSlaveSel == 1) // 下面是原先的内容
+				if (Pw_LoRaMasterSlaveSel == 1) // 下面是原先的内容
 				{
 					if (Key_Data == UPKEY && Lw_PageNo > 500) // Lw_PageNo>0  ZCL 2016.5.27 修改
 					{
-						// if(Lw_PageNo==300)
-						// Lw_PageNo=218;								//2016.5.27 209   			//ZCL 2016.10.6 208改成209
-						/* 				else if(Lw_PageNo==200)			//2016.5.23 ZCL 取消
-											Lw_PageNo=123;
-										else if(Lw_PageNo==100)
-											Lw_PageNo=17;	 */
-						//
-						// else
 						Lw_PageNo--;
-
-						// ZCL 2018.4.19 可以跳过 Menu_DspReadPar5 =205
-						//  if(Lw_PageNo==205)
-						//  Lw_PageNo=204;
 
 						if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
 							Lw_PageNo = 565;
@@ -14019,6 +13731,11 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 						{
 							if (Lw_PageNo == 543 - 1) // ZCL 2019.9.12
 								Lw_PageNo = 525;	  // ZCL 2019.10.18  520		540
+						}
+						else if (Pw_EquipmentType == 1) // 变频电机
+						{
+							if (Lw_PageNo == 543 - 1) // ZCL 2019.9.12
+								Lw_PageNo = 520;	  // ZCL 2019.10.18  520
 						}
 						else if (Pw_EquipmentType == 2) // 高压电机
 						{
@@ -14030,19 +13747,7 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 					// zcl 2014.3.26 >=3画面后，必须口令正确才可以显示 && (Lw_PageNo<4 || Pw_ModPar==10000 || Lw_PageNo>4 )
 					else if (Key_Data == DOWNKEY && Lw_PageNo < 999) // Lw_PageNo<11
 					{
-						// if(Lw_PageNo==218)						//2016.5.27 209					//ZCL 2016.10.6 208改成209
-						// Lw_PageNo=300;
-						/* 				else if(Lw_PageNo==123)		//2016.5.23 ZCL 取消
-											Lw_PageNo=200;
-										else if(Lw_PageNo==17)
-											Lw_PageNo=100;	 */
-						//
-						// else
 						Lw_PageNo++;
-
-						// ZCL 2018.4.19 可以跳过 Menu_DspReadPar5 =205
-						//  if(Lw_PageNo==205)
-						//  Lw_PageNo=206;
 
 						if (Lw_PageNo == 565 + 1) // ZCL 2019.4.5
 							Lw_PageNo = 999;
@@ -14052,6 +13757,11 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 							if (Lw_PageNo == 525 + 1) // ZCL 2019.9.12 520  540
 								Lw_PageNo = 543;
 						}
+						else if (Pw_EquipmentType == 1) // 变频电机
+						{
+							if (Lw_PageNo == 520 + 1) // ZCL 2019.9.12 520
+								Lw_PageNo = 543;
+						}
 						else if (Pw_EquipmentType == 2) // 高压电机
 						{
 							if (Lw_PageNo == 540 + 1) // ZCL 2019.9.12 520
@@ -14059,13 +13769,11 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 						}
 					}
 					else if (Key_Data == ESCKEY) // CANCEL键，返回
-						// Lw_PageNo=0;			//2016.5.23 ZCL 修改
-						Lw_PageNo = 500;		// 2016.5.23 ZCL 修改
-					else if (Key_Data == OKKEY) // ENTER键
+						Lw_PageNo = 500;		 // 2016.5.23 ZCL 修改
+					else if (Key_Data == OKKEY)	 // ENTER键
 					{
 						S_ModParStatus = 1;
 						ModParNo++;
-						// w_KeyPressDelay=1805;
 					}
 					else if (Key_Data == RIGHTKEY) // 右键
 					{
@@ -14096,7 +13804,6 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 				w_dspTouchRunStop = 1;							 // ZCL 2016.12.5 改成DSP中的参数
 			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1) // ZCL 2019.4.6 加DCM100中的按键启停参数
 				w_TouchRunStop = 1;
-			// B_ModPar=3;
 			B_PressedStopRunKey = 1;
 		}
 		else if (Key_Pressed == 1 && Key_Data == RUNKEY)
@@ -14105,21 +13812,12 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 				w_dspTouchRunStop = 0;							 // ZCL 2016.12.5 改成DSP中的参数
 			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1) // ZCL 2019.4.6 加DCM100中的按键启停参数
 				w_TouchRunStop = 0;
-			// B_ModPar=3;
 			B_PressedStopRunKey = 1;
 		}
 
 		// 特殊按键立即写参数 2015.9.5
 		if (B_ModPar == 100)
 		{
-			/* 		B_ModPar=4;
-					S_Com1Send=0;
-					C_Com1Send=0;
-					S_Com1SendNoNum=0;
-
-				}
-				if(B_ModPar==4)
-				{ */
 			if (Pw_ScrMenuMode == 2)
 				Write_Stm32Data(Address(&w_dspTouchRunStop, 3), w_dspTouchRunStop); // ZCL 2016.12.5 改成DSP中的参数
 			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1)					// ZCL 2019.4.6 加DCM100中的按键启停参数
@@ -14127,481 +13825,7 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 		}
 
 		// 6.快捷键 ZCL 2015.9.6  快按2次向右键 或者 向左键；只按一次超时清除快捷键计数器
-		if (Pw_LoRaMasterSlaveSel == 0) // LORA从机
-		{
-			if (Pw_ScrMenuMode == 0) //=0 DCM100 控制器模式	 2019.3.19
-			{
-				// 向右键
-				if (Lw_PageNo == 0 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 5;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.3.19
-				else if (Lw_PageNo == 5 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 10;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 10 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 17;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 17 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 101;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 101 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 103;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 103 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 108;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 108 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 113;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 113 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 117;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 117 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 121;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 121 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 125;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 125 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 129;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 129 && B_RightKeyCount == 2) // ZCL 2018.8.21
-				{
-					Lw_PageNo = 135;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.8.31 133
-				else if (Lw_PageNo == 135 && B_RightKeyCount == 2) // ZCL 2018.8.21 2019.8.31 133
-				{
-					Lw_PageNo = 200;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 200 && B_RightKeyCount == 2) // ZCL 2018.8.28 =0控制器
-				{
-					Lw_PageNo = 205;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 205 && B_RightKeyCount == 2) // ZCL 2018.8.28 =0控制器
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// 向左键
-				else if (Lw_PageNo == 0 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 200;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 202;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 202 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 205;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 205 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				//
-				else if (Lw_PageNo == 101 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2018.8.29 变频加速时间画面
-			}
-
-			else if (Pw_ScrMenuMode == 1) //=1 DCM100 变频器模式	2019.3.19
-			{
-				// 向右键
-				if (Lw_PageNo == 200 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 208;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 208 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 300 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// ZCL 2018.8.28 变频器模式
-				// 向左键
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 213;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 213 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 220;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 220 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 221;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 221 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-			}
-
-			else if (Pw_ScrMenuMode == 2) //=11 DCM220 变频器模式
-			{
-				// 向右键
-				if (Lw_PageNo == 200 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 300 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308；2019.9.11 310
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 310;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 310 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 330;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				// ZCL 2019.3.23
-				else if (Lw_PageNo == 330 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// ZCL 2018.8.28 变频器模式
-				// 向左键
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 250;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 250 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 255;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 255 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 261;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				// ZCL 2019.4.16 增加个“修改参数”，7个键的液晶屏，只有左键
-				else if (Lw_PageNo == 261 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 300 && B_LeftKeyCount == 2) // 261
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 310;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.10
-				else if (Lw_PageNo == 310 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 330;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				// ZCL 2019.3.23
-				else if (Lw_PageNo == 330 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-			}
-		}
-
-		// ZCL 2019.3.14 增加 LORA主机的时候，快捷键
-		else if (Pw_LoRaMasterSlaveSel == 1) // LORA主机
+		if (Pw_LoRaMasterSlaveSel == 1) // LORA主机
 		{
 			// 向右键 ZCL 2017.3.17
 			if (Lw_PageNo == 500 && B_RightKeyCount == 2) // ZCL 2016.10.6  初始画面按快捷键跳到 变频设定参数
@@ -14628,8 +13852,6 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 				B_RightKeyCount = 0;
 				B_LeftKeyCount = 0;
 			}
-
-			// ZCL 2019.10.19 YW310 SZM220 画面的快捷键
 			else if (Lw_PageNo == 551 && B_RightKeyCount == 2)
 			{
 				Lw_PageNo = 555;
@@ -14685,9 +13907,18 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 			// ZCL 2019.10.18 5-8号电机的快捷键
 			else if (Lw_PageNo == 516 && B_LeftKeyCount == 2)
 			{
-				Lw_PageNo = 521;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
+				if (Pw_EquipmentType == 1) // 变频电机
+				{
+					Lw_PageNo = 543;
+					B_LeftKeyCount = 0;
+					B_RightKeyCount = 0;
+				}
+				else // 双驱泵或高压电机
+				{
+					Lw_PageNo = 521;
+					B_LeftKeyCount = 0;
+					B_RightKeyCount = 0;
+				}
 			}
 			else if (Lw_PageNo == 521 && B_LeftKeyCount == 2)
 			{
@@ -14743,7 +13974,6 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 				B_RightKeyCount = 0;
 			}
 
-			// ZCL 2019.10.19 YW310 SZM220 画面的快捷键
 			else if (Lw_PageNo == 551 && B_LeftKeyCount == 2)
 			{
 				Lw_PageNo = 555;
@@ -14771,1721 +14001,7 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 			}
 		}
 	}
-	else if (Pw_EquipmentType == 1) // 变频电机
-	{
 
-		// 3.按键改变画面的处理
-		if (S_ModParStatus == 0)
-		{
-			if (Key_Pressed == 1 && Key_Data != 0 && F_KeyExec == 0)
-			{
-				F_KeyExec = 1;
-
-				// ZCL 2019.3.8 LORA从机
-				if (Pw_LoRaMasterSlaveSel == 0) // 下面是原先的内容
-				{
-
-					// zcl 2014.3.26 >=3画面后，必须口令正确才可以显示 && (Lw_PageNo<4 || Pw_ModPar==10000 || Lw_PageNo>4 )
-					if (Key_Data == DOWNKEY && Lw_PageNo < 999) // Lw_PageNo<11  ZCL 2018.8.28 308
-					{
-						Lw_PageNo++;
-
-						if (Pw_ScrMenuMode == 0)
-						{
-							if (Lw_PageNo == 20 + 1) // ZCL 2018.8.21 18;  2019.8.7 19
-								Lw_PageNo = 100;
-							else if (Lw_PageNo == 135 + 1) // ZCL 2018.8.21 125;		2019.8.31 133
-								Lw_PageNo = 199;		   // ZCL 2018.8.28 200;
-							else if (Lw_PageNo == 207 + 1) // ZCL 2018.8.28 =0，控制器模式
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310) // ZCL 2019.4.15 定频有重复，310跳过
-								Lw_PageNo = 523;
-
-							// ZCL 2018.4.19 跳过 7: Menu_StmReadPar8
-							else if (Lw_PageNo == 7)
-								Lw_PageNo = 8;
-							else if (Lw_PageNo == 524) // ZCL 2019.4.9 子机跳过524页
-								Lw_PageNo = 525;
-							else if (Lw_PageNo == 529 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-						}
-
-						else if (Pw_ScrMenuMode == 1)
-						{
-							if (Lw_PageNo == 221 + 1) // ZCL 2019.3.19 =1，变频器模式
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310 + 1)
-								Lw_PageNo = 523; // ZCL 2019.3.23
-
-							else if (Lw_PageNo == 524) // ZCL 2019.4.9 子机跳过524页
-								Lw_PageNo = 525;
-							else if (Lw_PageNo == 529 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-
-							else if (Lw_PageNo == 210) // ZCL 2019.4.15 跳过210：Menu_StmReadPar8_NoUse()
-								Lw_PageNo = 211;
-						}
-
-						else if (Pw_ScrMenuMode == 2) // ZCL 2019.3.19 =11，DCM220变频器模式
-						{
-							if (Lw_PageNo == 207 + 1)
-								Lw_PageNo = 250;
-							else if (Lw_PageNo == 261 + 1)
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310 + 1)
-								Lw_PageNo = 330;
-							else if (Lw_PageNo == 332 + 1) // ZCL 2020.4.8
-								Lw_PageNo = 523;
-							//
-
-							else if (Lw_PageNo == 524) // ZCL 2019.4.9 子机跳过524页
-								Lw_PageNo = 525;
-							else if (Lw_PageNo == 529 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-						}
-					}
-
-					else if (Key_Data == UPKEY && Lw_PageNo > 0)
-					{
-						Lw_PageNo--;
-
-						if (Pw_ScrMenuMode == 0) // ZCL 2018.8.28 =0，控制器模式
-						{
-							if (Lw_PageNo == 523 - 1) // ZCL 2019.4.2  524
-								Lw_PageNo = 310 - 1;  // ZCL 2019.4.15 定频有重复，310跳过
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 207;
-							else if (Lw_PageNo == 199 - 1) // ZCL 2018.8.28 =0，控制器模式
-								Lw_PageNo = 135;		   // ZCL 2019.8.31 133
-							else if (Lw_PageNo == 100 - 1)
-								Lw_PageNo = 20; // ZCL 2019.8.7
-
-							// ZCL 2018.4.19 可以跳过 7: Menu_StmReadPar8
-							// ZCL 2019.4.11 备注：跳过的页，直接写数字，不用+1，-1（第7页，第524页跳过）
-							else if (Lw_PageNo == 7)
-								Lw_PageNo = 6;
-							else if (Lw_PageNo == 524) // ZCL 2019.4.9 子机跳过524页
-								Lw_PageNo = 523;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 530 - 1;
-						}
-
-						else if (Pw_ScrMenuMode == 1) // ZCL 2019.3.19 =1，变频器模式
-						{
-							if (Lw_PageNo == 523 - 1) // ZCL 2019.4.2  524
-								Lw_PageNo = 310;
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 221;
-							else if (Lw_PageNo == 200 - 1)
-								Lw_PageNo = 200;
-
-							else if (Lw_PageNo == 524) // ZCL 2019.4.9 子机跳过524页
-								Lw_PageNo = 523;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 530 - 1;
-							else if (Lw_PageNo == 210) // ZCL 2019.4.15 跳过210：Menu_StmReadPar8_NoUse()
-								Lw_PageNo = 209;
-						}
-
-						else if (Pw_ScrMenuMode == 2) // ZCL 2019.3.19 =11，DCM220变频器模式
-						{
-							if (Lw_PageNo == 523 - 1) // ZCL 2019.3.23
-								Lw_PageNo = 332;
-							else if (Lw_PageNo == 330 - 1)
-								Lw_PageNo = 310;
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 261;
-							else if (Lw_PageNo == 250 - 1)
-								Lw_PageNo = 207;
-							else if (Lw_PageNo == 200 - 1)
-								Lw_PageNo = 200;
-
-							else if (Lw_PageNo == 524) // ZCL 2019.4.9 子机跳过524页
-								Lw_PageNo = 523;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 530 - 1;
-						}
-					}
-
-					else if (Key_Data == ESCKEY) // CANCEL键，返回
-						Lw_PageNo = 0;
-					else if (Key_Data == OKKEY) // ENTER键  进入参数修改状态
-					{
-						S_ModParStatus = 1; // 进入参数修改状态
-						ModParNo++;			// 修改参数序号++
-					}
-					else if (Key_Data == RIGHTKEY) // 右键
-					{
-						B_RightKeyCount++;
-					}
-					else if (Key_Data == LEFTKEY) // 左键
-					{
-						B_LeftKeyCount++;
-					}
-				}
-
-				// ZCL 2019.3.8 新加 LORA主机
-				else if (Pw_LoRaMasterSlaveSel == 1) // 下面是原先的内容
-				{
-					if (Key_Data == UPKEY && Lw_PageNo > 500) // Lw_PageNo>0  ZCL 2016.5.27 修改
-					{
-						Lw_PageNo--;
-
-						if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-							Lw_PageNo = 534;
-
-						if (Lw_PageNo == 523 - 1) // ZCL 2019.9.12
-							Lw_PageNo = 520;
-					}
-
-					// zcl 2014.3.26 >=3画面后，必须口令正确才可以显示 && (Lw_PageNo<4 || Pw_ModPar==10000 || Lw_PageNo>4 )
-					else if (Key_Data == DOWNKEY && Lw_PageNo < 999) // Lw_PageNo<11
-					{
-						Lw_PageNo++;
-
-						if (Lw_PageNo == 534 + 1) // ZCL 2019.4.5
-							Lw_PageNo = 999;
-
-						if (Lw_PageNo == 520 + 1) // ZCL 2019.9.12
-							Lw_PageNo = 523;
-					}
-					else if (Key_Data == ESCKEY) // CANCEL键，返回
-						Lw_PageNo = 500;		 // 2016.5.23 ZCL 修改
-					else if (Key_Data == OKKEY)	 // ENTER键
-					{
-						S_ModParStatus = 1;
-						ModParNo++;
-						// w_KeyPressDelay=1805;
-					}
-					else if (Key_Data == RIGHTKEY) // 右键
-					{
-						B_RightKeyCount++;
-					}
-					else if (Key_Data == LEFTKEY) // 左键
-					{
-						B_LeftKeyCount++;
-					}
-				}
-			}
-		}
-		// 4.按键修改参数的处理
-		else
-		{
-			if (Key_Pressed == 1 && Key_Data != 0 && F_KeyExec == 0)
-			{
-				F_KeyExec = 1;
-				Sa_ModParKeyData = Key_Data;
-			}
-		}
-
-		// 5. RUN . STOP 按键的操作。 特殊按键立即写参数 ZCL  2015.9.5  2016.12.6
-		// ZCL 2018.5.19 这一段移植 V145-3。 原因：DSP串口不允许打断，不像ARM那样。有启停按键指令也得等通讯结束再进行。
-		if (Key_Pressed == 1 && Key_Data == STOPKEY)
-		{
-			if (Pw_ScrMenuMode == 2)
-				w_dspTouchRunStop = 1;							 // ZCL 2016.12.5 改成DSP中的参数
-			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1) // ZCL 2019.4.6 加DCM100中的按键启停参数
-				w_TouchRunStop = 1;
-			// B_ModPar=3;
-			B_PressedStopRunKey = 1;
-		}
-		else if (Key_Pressed == 1 && Key_Data == RUNKEY)
-		{
-			if (Pw_ScrMenuMode == 2)
-				w_dspTouchRunStop = 0;							 // ZCL 2016.12.5 改成DSP中的参数
-			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1) // ZCL 2019.4.6 加DCM100中的按键启停参数
-				w_TouchRunStop = 0;
-			// B_ModPar=3;
-			B_PressedStopRunKey = 1;
-		}
-
-		// 特殊按键立即写参数 2015.9.5
-		if (B_ModPar == 100)
-		{
-			/* 		B_ModPar=4;
-					S_Com1Send=0;
-					C_Com1Send=0;
-					S_Com1SendNoNum=0;
-
-				}
-				if(B_ModPar==4)
-				{ */
-			if (Pw_ScrMenuMode == 2)
-				Write_Stm32Data(Address(&w_dspTouchRunStop, 3), w_dspTouchRunStop); // ZCL 2016.12.5 改成DSP中的参数
-			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1)					// ZCL 2019.4.6 加DCM100中的按键启停参数
-				Write_Stm32Data(Address(&w_TouchRunStop, 1), w_TouchRunStop);
-		}
-
-		// 6.快捷键 ZCL 2015.9.6  快按2次向右键 或者 向左键；只按一次超时清除快捷键计数器
-		if (Pw_LoRaMasterSlaveSel == 0) // LORA从机
-		{
-			if (Pw_ScrMenuMode == 0) //=0 DCM100 控制器模式	 2019.3.19
-			{
-				// 向右键
-				if (Lw_PageNo == 0 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 5;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.3.19
-				else if (Lw_PageNo == 5 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 10;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 10 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 17;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 17 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 101;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 101 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 103;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 103 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 108;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 108 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 113;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 113 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 117;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 117 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 121;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 121 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 125;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 125 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 129;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 129 && B_RightKeyCount == 2) // ZCL 2018.8.21
-				{
-					Lw_PageNo = 135;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.8.31 133
-				else if (Lw_PageNo == 135 && B_RightKeyCount == 2) // ZCL 2018.8.21 2019.8.31 133
-				{
-					Lw_PageNo = 200;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 200 && B_RightKeyCount == 2) // ZCL 2018.8.28 =0控制器
-				{
-					Lw_PageNo = 205;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 205 && B_RightKeyCount == 2) // ZCL 2018.8.28 =0控制器
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 523;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 523 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 527;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 527 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// 向左键
-				else if (Lw_PageNo == 0 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 200;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 202;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 202 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 205;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 205 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 523;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 523 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 527;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 527 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				//
-				else if (Lw_PageNo == 101 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2018.8.29 变频加速时间画面
-			}
-
-			else if (Pw_ScrMenuMode == 1) //=1 DCM100 变频器模式	2019.3.19
-			{
-				// 向右键
-				if (Lw_PageNo == 200 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 208;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 208 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 300 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 523;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 523 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 527;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 527 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// ZCL 2018.8.28 变频器模式
-				// 向左键
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 213;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 213 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 220;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 220 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 221;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 221 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 523;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 523 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 527;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 527 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-			}
-
-			else if (Pw_ScrMenuMode == 2) //=11 DCM220 变频器模式
-			{
-				// 向右键
-				if (Lw_PageNo == 200 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 300 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308；2019.9.11 310
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 310;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 310 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 330;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				// ZCL 2019.3.23
-				else if (Lw_PageNo == 330 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 523;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 523 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 527;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 527 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// ZCL 2018.8.28 变频器模式
-				// 向左键
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 250;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 250 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 255;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 255 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 261;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				// ZCL 2019.4.16 增加个“修改参数”，7个键的液晶屏，只有左键
-				else if (Lw_PageNo == 261 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 300 && B_LeftKeyCount == 2) // 261
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 310;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.10
-				else if (Lw_PageNo == 310 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 330;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				// ZCL 2019.3.23
-				else if (Lw_PageNo == 330 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 523;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 523 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 527;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 527 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-			}
-		}
-
-		// ZCL 2019.3.14 增加 LORA主机的时候，快捷键
-		else if (Pw_LoRaMasterSlaveSel == 1) // LORA主机
-		{
-			// 向右键 ZCL 2017.3.17
-			if (Lw_PageNo == 500 && B_RightKeyCount == 2) // ZCL 2016.10.6  初始画面按快捷键跳到 变频设定参数
-			{
-				Lw_PageNo = 523;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 523 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 524;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 524 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 527;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 527 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 531;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 531 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 999;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-
-			// 向左键 ZCL 2017.3.17
-			else if (Lw_PageNo == 500 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 501;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 501 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 506;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 506 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 511;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 511 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 516;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 516 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 523;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 523 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 524;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 524 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 527;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 527 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 531;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 531 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 999;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-		}
-	}
-	else if (Pw_EquipmentType == 2) // 高压电机
-	{
-		// 3.按键改变画面的处理
-		if (S_ModParStatus == 0)
-		{
-			if (Key_Pressed == 1 && Key_Data != 0 && F_KeyExec == 0)
-			{
-				F_KeyExec = 1;
-
-				// ZCL 2019.3.8 LORA从机
-				if (Pw_LoRaMasterSlaveSel == 0) // 下面是原先的内容
-				{
-
-					// zcl 2014.3.26 >=3画面后，必须口令正确才可以显示 && (Lw_PageNo<4 || Pw_ModPar==10000 || Lw_PageNo>4 )
-					if (Key_Data == DOWNKEY && Lw_PageNo < 999) // Lw_PageNo<11  ZCL 2018.8.28 308
-					{
-						Lw_PageNo++;
-
-						if (Pw_ScrMenuMode == 0)
-						{
-							if (Lw_PageNo == 20 + 1) // ZCL 2018.8.21 18;  2019.8.7 19
-								Lw_PageNo = 100;
-							else if (Lw_PageNo == 135 + 1) // ZCL 2018.8.21 125;		2019.8.31 133
-								Lw_PageNo = 199;		   // ZCL 2018.8.28 200;
-							else if (Lw_PageNo == 207 + 1) // ZCL 2018.8.28 =0，控制器模式
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310) // ZCL 2019.4.15 定频有重复，310跳过
-								Lw_PageNo = 543;
-
-							// ZCL 2018.4.19 跳过 7: Menu_StmReadPar8
-							else if (Lw_PageNo == 7)
-								Lw_PageNo = 8;
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 546;
-							else if (Lw_PageNo == 550 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-						}
-
-						else if (Pw_ScrMenuMode == 1)
-						{
-							if (Lw_PageNo == 221 + 1) // ZCL 2019.3.19 =1，变频器模式
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310 + 1)
-								Lw_PageNo = 543; // ZCL 2019.3.23
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 546;
-							else if (Lw_PageNo == 550 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-
-							else if (Lw_PageNo == 210) // ZCL 2019.4.15 跳过210：Menu_StmReadPar8_NoUse()
-								Lw_PageNo = 211;
-						}
-
-						else if (Pw_ScrMenuMode == 2) // ZCL 2019.3.19 =11，DCM220变频器模式
-						{
-							if (Lw_PageNo == 207 + 1)
-								Lw_PageNo = 250;
-							else if (Lw_PageNo == 261 + 1)
-								Lw_PageNo = 300;
-							else if (Lw_PageNo == 310 + 1)
-								Lw_PageNo = 330;
-							else if (Lw_PageNo == 331 + 1) // ZCL 2019.3.23
-								Lw_PageNo = 543;
-							//
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 546;
-							else if (Lw_PageNo == 550 + 1) // ZCL 2019.4.5
-								Lw_PageNo = 999;
-						}
-					}
-
-					else if (Key_Data == UPKEY && Lw_PageNo > 0)
-					{
-						Lw_PageNo--;
-
-						if (Pw_ScrMenuMode == 0) // ZCL 2018.8.28 =0，控制器模式
-						{
-							if (Lw_PageNo == 543 - 1) // ZCL 2019.4.2  544
-								Lw_PageNo = 310 - 1;  // ZCL 2019.4.15 定频有重复，310跳过
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 207;
-							else if (Lw_PageNo == 199 - 1) // ZCL 2018.8.28 =0，控制器模式
-								Lw_PageNo = 135;		   // ZCL 2019.8.31 133
-							else if (Lw_PageNo == 100 - 1)
-								Lw_PageNo = 20; // ZCL 2019.8.7
-
-							// ZCL 2018.4.19 可以跳过 7: Menu_StmReadPar8
-							// ZCL 2019.4.11 备注：跳过的页，直接写数字，不用+1，-1（第7页，第544页跳过）
-							else if (Lw_PageNo == 7)
-								Lw_PageNo = 6;
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 543;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 551 - 1;
-						}
-
-						else if (Pw_ScrMenuMode == 1) // ZCL 2019.3.19 =1，变频器模式
-						{
-							if (Lw_PageNo == 543 - 1) // ZCL 2019.4.2  544
-								Lw_PageNo = 310;
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 221;
-							else if (Lw_PageNo == 200 - 1)
-								Lw_PageNo = 200;
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 543;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 551 - 1;
-							else if (Lw_PageNo == 210) // ZCL 2019.4.15 跳过210：Menu_StmReadPar8_NoUse()
-								Lw_PageNo = 209;
-						}
-
-						else if (Pw_ScrMenuMode == 2) // ZCL 2019.3.19 =11，DCM220变频器模式
-						{
-							if (Lw_PageNo == 543 - 1) // ZCL 2019.3.23
-								Lw_PageNo = 331;
-							else if (Lw_PageNo == 330 - 1)
-								Lw_PageNo = 310;
-							else if (Lw_PageNo == 300 - 1)
-								Lw_PageNo = 261;
-							else if (Lw_PageNo == 250 - 1)
-								Lw_PageNo = 207;
-							else if (Lw_PageNo == 200 - 1)
-								Lw_PageNo = 200;
-
-							else if (Lw_PageNo == 544) // ZCL 2019.4.9 子机跳过544页
-								Lw_PageNo = 543;
-							else if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-								Lw_PageNo = 551 - 1;
-						}
-					}
-
-					else if (Key_Data == ESCKEY) // CANCEL键，返回
-						Lw_PageNo = 0;
-					else if (Key_Data == OKKEY) // ENTER键  进入参数修改状态
-					{
-						S_ModParStatus = 1; // 进入参数修改状态
-						ModParNo++;			// 修改参数序号++
-					}
-					else if (Key_Data == RIGHTKEY) // 右键
-					{
-						B_RightKeyCount++;
-					}
-					else if (Key_Data == LEFTKEY) // 左键
-					{
-						B_LeftKeyCount++;
-					}
-				}
-
-				// ZCL 2019.3.8 新加 LORA主机
-				else if (Pw_LoRaMasterSlaveSel == 1) // 下面是原先的内容
-				{
-					if (Key_Data == UPKEY && Lw_PageNo > 500) // Lw_PageNo>0  ZCL 2016.5.27 修改
-					{
-						// if(Lw_PageNo==300)
-						// Lw_PageNo=218;								//2016.5.27 209   			//ZCL 2016.10.6 208改成209
-						/* 				else if(Lw_PageNo==200)			//2016.5.23 ZCL 取消
-											Lw_PageNo=123;
-										else if(Lw_PageNo==100)
-											Lw_PageNo=17;	 */
-						//
-						// else
-						Lw_PageNo--;
-
-						// ZCL 2018.4.19 可以跳过 Menu_DspReadPar5 =205
-						//  if(Lw_PageNo==205)
-						//  Lw_PageNo=204;
-
-						if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-							Lw_PageNo = 565;
-
-						if (Lw_PageNo == 543 - 1) // ZCL 2019.9.12
-							Lw_PageNo = 540;	  // ZCL 2019.10.18  520
-					}
-
-					// zcl 2014.3.26 >=3画面后，必须口令正确才可以显示 && (Lw_PageNo<4 || Pw_ModPar==10000 || Lw_PageNo>4 )
-					else if (Key_Data == DOWNKEY && Lw_PageNo < 999) // Lw_PageNo<11
-					{
-						// if(Lw_PageNo==218)						//2016.5.27 209					//ZCL 2016.10.6 208改成209
-						// Lw_PageNo=300;
-						/* 				else if(Lw_PageNo==123)		//2016.5.23 ZCL 取消
-											Lw_PageNo=200;
-										else if(Lw_PageNo==17)
-											Lw_PageNo=100;	 */
-						//
-						// else
-						Lw_PageNo++;
-
-						// ZCL 2018.4.19 可以跳过 Menu_DspReadPar5 =205
-						//  if(Lw_PageNo==205)
-						//  Lw_PageNo=206;
-
-						if (Lw_PageNo == 565 + 1) // ZCL 2019.4.5
-							Lw_PageNo = 999;
-
-						if (Lw_PageNo == 540 + 1) // ZCL 2019.9.12 520
-							Lw_PageNo = 543;
-					}
-					else if (Key_Data == ESCKEY) // CANCEL键，返回
-						// Lw_PageNo=0;			//2016.5.23 ZCL 修改
-						Lw_PageNo = 500;		// 2016.5.23 ZCL 修改
-					else if (Key_Data == OKKEY) // ENTER键
-					{
-						S_ModParStatus = 1;
-						ModParNo++;
-						// w_KeyPressDelay=1805;
-					}
-					else if (Key_Data == RIGHTKEY) // 右键
-					{
-						B_RightKeyCount++;
-					}
-					else if (Key_Data == LEFTKEY) // 左键
-					{
-						B_LeftKeyCount++;
-					}
-				}
-			}
-		}
-		// 4.按键修改参数的处理
-		else
-		{
-			if (Key_Pressed == 1 && Key_Data != 0 && F_KeyExec == 0)
-			{
-				F_KeyExec = 1;
-				Sa_ModParKeyData = Key_Data;
-			}
-		}
-
-		// 5. RUN . STOP 按键的操作。 特殊按键立即写参数 ZCL  2015.9.5  2016.12.6
-		// ZCL 2018.5.19 这一段移植 V145-3。 原因：DSP串口不允许打断，不像ARM那样。有启停按键指令也得等通讯结束再进行。
-		if (Key_Pressed == 1 && Key_Data == STOPKEY)
-		{
-			if (Pw_ScrMenuMode == 2)
-				w_dspTouchRunStop = 1;							 // ZCL 2016.12.5 改成DSP中的参数
-			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1) // ZCL 2019.4.6 加DCM100中的按键启停参数
-				w_TouchRunStop = 1;
-			// B_ModPar=3;
-			B_PressedStopRunKey = 1;
-		}
-		else if (Key_Pressed == 1 && Key_Data == RUNKEY)
-		{
-			if (Pw_ScrMenuMode == 2)
-				w_dspTouchRunStop = 0;							 // ZCL 2016.12.5 改成DSP中的参数
-			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1) // ZCL 2019.4.6 加DCM100中的按键启停参数
-				w_TouchRunStop = 0;
-			// B_ModPar=3;
-			B_PressedStopRunKey = 1;
-		}
-
-		// 特殊按键立即写参数 2015.9.5
-		if (B_ModPar == 100)
-		{
-			/* 		B_ModPar=4;
-					S_Com1Send=0;
-					C_Com1Send=0;
-					S_Com1SendNoNum=0;
-
-				}
-				if(B_ModPar==4)
-				{ */
-			if (Pw_ScrMenuMode == 2)
-				Write_Stm32Data(Address(&w_dspTouchRunStop, 3), w_dspTouchRunStop); // ZCL 2016.12.5 改成DSP中的参数
-			else if (Pw_ScrMenuMode == 0 || Pw_ScrMenuMode == 1)					// ZCL 2019.4.6 加DCM100中的按键启停参数
-				Write_Stm32Data(Address(&w_TouchRunStop, 1), w_TouchRunStop);
-		}
-
-		// 6.快捷键 ZCL 2015.9.6  快按2次向右键 或者 向左键；只按一次超时清除快捷键计数器
-		if (Pw_LoRaMasterSlaveSel == 0) // LORA从机
-		{
-			if (Pw_ScrMenuMode == 0) //=0 DCM100 控制器模式	 2019.3.19
-			{
-				// 向右键
-				if (Lw_PageNo == 0 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 5;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.3.19
-				else if (Lw_PageNo == 5 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 10;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 10 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 17;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 17 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 101;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 101 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 103;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 103 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 108;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 108 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 113;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 113 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 117;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 117 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 121;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 121 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 125;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 125 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 129;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 129 && B_RightKeyCount == 2) // ZCL 2018.8.21
-				{
-					Lw_PageNo = 135;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.8.31 133
-				else if (Lw_PageNo == 135 && B_RightKeyCount == 2) // ZCL 2018.8.21 2019.8.31 133
-				{
-					Lw_PageNo = 200;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 200 && B_RightKeyCount == 2) // ZCL 2018.8.28 =0控制器
-				{
-					Lw_PageNo = 205;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 205 && B_RightKeyCount == 2) // ZCL 2018.8.28 =0控制器
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// 向左键
-				else if (Lw_PageNo == 0 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 200;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 202;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 202 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 205;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 205 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				//
-				else if (Lw_PageNo == 101 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2018.8.29 变频加速时间画面
-			}
-
-			else if (Pw_ScrMenuMode == 1) //=1 DCM100 变频器模式	2019.3.19
-			{
-				// 向右键
-				if (Lw_PageNo == 200 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 208;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 208 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 300 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// ZCL 2018.8.28 变频器模式
-				// 向左键
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 213;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 213 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 220;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 220 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 221;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 221 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-			}
-
-			else if (Pw_ScrMenuMode == 2) //=11 DCM220 变频器模式
-			{
-				// 向右键
-				if (Lw_PageNo == 200 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 300 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 301;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 301 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 305 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308；2019.9.11 310
-				else if (Lw_PageNo == 309 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 310;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.11
-				else if (Lw_PageNo == 310 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 330;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				// ZCL 2019.3.23
-				else if (Lw_PageNo == 330 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				}
-
-				// ZCL 2018.8.28 变频器模式
-				// 向左键
-				else if (Lw_PageNo == 200 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 207;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 207 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 250;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 250 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 255;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 255 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 261;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				// ZCL 2019.4.16 增加个“修改参数”，7个键的液晶屏，只有左键
-				else if (Lw_PageNo == 261 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 300;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-
-				else if (Lw_PageNo == 300 && B_LeftKeyCount == 2) // 261
-				{
-					Lw_PageNo = 301;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 301 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 305;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 305 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 309;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				else if (Lw_PageNo == 309 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 310;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				} // ZCL 2019.4.15 310
-				// ZCL 2019.4.15 2019.9.10
-				else if (Lw_PageNo == 310 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 330;
-					B_RightKeyCount = 0;
-					B_LeftKeyCount = 0;
-				} // ZCL 2018.8.28 308
-				// ZCL 2019.3.23
-				else if (Lw_PageNo == 330 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 543;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 548;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-				else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-				{
-					Lw_PageNo = 999;
-					B_LeftKeyCount = 0;
-					B_RightKeyCount = 0;
-				}
-			}
-		}
-
-		// ZCL 2019.3.14 增加 LORA主机的时候，快捷键
-		else if (Pw_LoRaMasterSlaveSel == 1) // LORA主机
-		{
-			// 向右键 ZCL 2017.3.17
-			if (Lw_PageNo == 500 && B_RightKeyCount == 2) // ZCL 2016.10.6  初始画面按快捷键跳到 变频设定参数
-			{
-				Lw_PageNo = 543;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 543 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 544;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 544 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 548;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 551;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-
-			// ZCL 2019.10.19 YW310 SZM220 画面的快捷键
-			else if (Lw_PageNo == 551 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 555;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 555 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 559;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-			else if (Lw_PageNo == 559 && B_RightKeyCount == 2)
-			{
-				Lw_PageNo = 565;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-
-			else if (Lw_PageNo == 565 && B_RightKeyCount == 2) // ZCL 2019.10.19 551
-			{
-				Lw_PageNo = 999;
-				B_RightKeyCount = 0;
-				B_LeftKeyCount = 0;
-			}
-
-			// 向左键 ZCL 2017.3.17
-			else if (Lw_PageNo == 500 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 501;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 501 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 506;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 506 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 511;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 511 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 516;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-
-			// ZCL 2019.10.18 5-8号电机的快捷键
-			else if (Lw_PageNo == 516 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 521;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 521 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 526;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 526 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 531;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 531 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 536;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-
-			else if (Lw_PageNo == 536 && B_LeftKeyCount == 2) // 516
-			{
-				Lw_PageNo = 543;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 543 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 544;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 544 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 548;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 551;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-
-			// ZCL 2019.10.19 YW310 SZM220 画面的快捷键
-			else if (Lw_PageNo == 551 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 555;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 555 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 559;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-			else if (Lw_PageNo == 559 && B_LeftKeyCount == 2)
-			{
-				Lw_PageNo = 565;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-
-			else if (Lw_PageNo == 565 && B_LeftKeyCount == 2) // ZCL 2019.10.19 551
-			{
-				Lw_PageNo = 999;
-				B_LeftKeyCount = 0;
-				B_RightKeyCount = 0;
-			}
-		}
-	}
 	// 只按一次超时清除快捷键计数器
 	if (T_KeyPressOverTime != SClk1Ms)
 	{

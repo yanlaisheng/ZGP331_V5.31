@@ -360,10 +360,6 @@ int main(void)
 
 		IWDG_Feed(); // 喂狗	2013.7.3
 
-		// AnologIn(); 						//ZCL 2018.11.13 暂存，里面的程序已删除
-		/* 		TIM_SetCompare2(TIM2, w_AI1Value); 		//PWM-DAC */
-		// TIM2->CCR2=w_AI1Value; 		//也可以直接操作寄存器
-
 		if (w_TestItemSel >= 1) // 测试选择 2014.5.6
 		{
 			Test(); // 测试程序
@@ -418,57 +414,6 @@ int main(void)
  *******************************************************************************/
 void RCC_Configuration(void)
 {
-	// ErrorStatus HSEStartUpStatus;
-
-	// /* RCC system reset(for debug purpose) */
-	// RCC_DeInit();
-
-	// /* Enable HSE */
-	// RCC_HSEConfig(RCC_HSE_ON);
-
-	// /* Wait till HSE is ready */
-	// HSEStartUpStatus = RCC_WaitForHSEStartUp();
-
-	// if(HSEStartUpStatus == SUCCESS)
-	// {
-	// /* HCLK = SYSCLK */
-	// RCC_HCLKConfig(RCC_SYSCLK_Div1);
-
-	// /* PCLK2 = HCLK */
-	// RCC_PCLK2Config(RCC_HCLK_Div1);
-
-	// /* PCLK1 = HCLK/2 */
-	// RCC_PCLK1Config(RCC_HCLK_Div2);
-
-	// /* ADCCLK = PCLK2/6 */
-	// RCC_ADCCLKConfig(RCC_PCLK2_Div6);
-
-	// /* Flash 2 wait state */
-	// FLASH_SetLatency(FLASH_Latency_2);
-
-	// /* Enable Prefetch Buffer */
-	// FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
-
-	// /* PLLCLK = 8MHz * 4 = 32 MHz */
-	// RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_4);   // 2013.1.17
-
-	// /* Enable PLL */
-	// RCC_PLLCmd(ENABLE);
-
-	// /* Wait till PLL is ready */
-	// while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
-	// {
-	// }
-
-	// /* Select PLL as system clock source */
-	// RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-
-	// /* Wait till PLL is used as system clock source */
-	// while(RCC_GetSYSCLKSource() != 0x08)
-	// {
-	// }
-	// }
-
 	/* Enable GPIOA, GPIOB, GPIOC, GPIOD, GPIOE and AFIO clocks */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD | RCC_APB2Periph_AFIO, ENABLE);
 
