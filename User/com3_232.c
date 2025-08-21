@@ -540,6 +540,9 @@
 #include "string.h" //strstr函数：找出str2字符串在str1字符串中第一次出现的位置
 #include <stdio.h>	//加上此句可以用printf
 #include <stdarg.h>
+#include "iap_interface.h"
+#include "cString.h"
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 
@@ -839,8 +842,8 @@ uc8 GPRS_SetParReturn[16] = {
 uc8 GPRS_ZhenTou[16] = {0x7B, 0x09, 0x00, 0x10, 0x31, 0x33, 0x39, 0x31, 0x32, 0x33,
 						0x34, 0x35, 0x36, 0x37, 0x38, 0x7B};
 
-uc8 DtuProgVersion[7] = "5.31";		 // 7 DTU程序版本:70		修改完程序后，要改这2个地方 YLS 2023.12.06
-uc8 DtuProgMakeDate[8] = "20250221"; // 8 DTU程序生成日期:71		修改完程序后，要改这2个地方 YLS 2023.12.06
+uc8 DtuProgVersion[7] = "5.33";		 // 7 DTU程序版本:70		修改完程序后，要改这2个地方 YLS 2023.12.06
+uc8 DtuProgMakeDate[8] = "20250616"; // 8 DTU程序生成日期:71		修改完程序后，要改这2个地方 YLS 2023.12.06
 
 uc8 DtuHardWare[14] = "V5.3-F103-4G  "; // 14+7 DTU硬件平台版本:73
 uc8 DtuManufacture[6] = "SANLEY";		// 6 DTU生产商LOGO:74
@@ -1034,7 +1037,7 @@ extern u8 Txd1Buffer_TEMP[];
 
 extern void UART3_Output_Datas(uint8_t S_Out[], uint16_t Counter);
 extern void Fill_data(void);
-extern unsigned int atoi(unsigned char *s, unsigned char sz);
+unsigned int my_atoi(unsigned char *s, unsigned char sz);
 extern void delay_ms(vu16 nCount);
 extern void LCD_DLY_ms(u32 Time);
 extern void At_DomainName(u8 i);
@@ -1145,13 +1148,15 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 {
 	u8 i = 0; // 临时变量 k,s,
 	u16 j, m, n;
+	char m_u8;
 	uchar s; // ttp:transparent protocol 透明协议
 	uint k, len1, len2;
 	u16 *p_wRead;
 	u8 *p_wRead_u8;
 	u8 *p_bMove;
-	u16 *p_wTarget;	  // 指向目标字符串
-	u8 *p_wTarget_u8; // 指向目标字符串
+	u16 *p_wTarget;		  // 指向目标字符串
+	u8 *p_wTarget_u8;	  // 指向目标字符串
+	char *p_wTarget_char; // 指向目标字符串
 	u8 *p_bGen;
 	//	u8 ipbuf[15]; // IP缓存
 
@@ -1247,12 +1252,25 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 					}
 
 				case 0x07: // 等待注册网络
-					ptr = (u8 *)strstr(Rcv3Buffer, "+CREG:");
-					if (ptr != NULL)
+					if (w_ZhouShanProtocol_bit11 == 0)
 					{
-						if (*(ptr + 9) == '1' || *(ptr + 9) == '5')
-							AT_ComOk_Flag = TRUE;
+						ptr = (u8 *)strstr(Rcv3Buffer, "+CREG:");
+						if (ptr != NULL)
+						{
+							if (*(ptr + 9) == '1' || *(ptr + 9) == '5')
+								AT_ComOk_Flag = TRUE;
+						}
 					}
+					else
+					{
+						ptr = (u8 *)strstr(Rcv3Buffer, "+CEREG:");
+						if (ptr != NULL)
+						{
+							if (*(ptr + 10) == '1' || *(ptr + 10) == '5')
+								AT_ComOk_Flag = TRUE;
+						}
+					}
+
 					break;
 
 				case 0x08: // 设置波特率
@@ -1716,7 +1734,7 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 									else if (Txd2Buffer[1] == 16) // 16预置多寄存器
 									{
 										B_Com3Cmd16 = 1;
-										if (Txd2Buffer[5] <= 30) // ZCL 2021.11.17  限制数量
+										if (Txd2Buffer[5] <= COM16_MAX_NUM) // ZCL 2021.11.17  限制数量
 										{
 											p_bGen = Txd2Buffer;
 											j = Txd2Buffer[2];
@@ -1727,13 +1745,32 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 												// 这是预置本机的 设定参数；
 												if (Lw_Com3RegAddr < 63000)
 												{
-													p_wTarget = AddressConvert_Com3(Lw_Com3RegAddr);
-
-													for (k = 0; k < Txd2Buffer[5]; k++) // Rcv0Buffer[5]=字数
+													if (Lw_Com3RegAddr == 0xF24E) // 62030，OTA升级地址，
 													{
-														m = *(p_bGen + 7 + k * 2);
-														n = *(p_bGen + 7 + k * 2 + 1);
-														*(p_wTarget + Lw_Com3RegAddr + k) = (m << 8) + n;
+														// 存储 url 到 flash
+														p_wTarget_char = ota_url;
+
+														for (k = 0; k < Txd2Buffer[6]; k++) // Rcv0Buffer[5]=字数
+														{
+															m_u8 = *(p_bGen + 7 + k);
+															*(p_wTarget_char + k) = m_u8;
+														}
+
+														iap_interface_set_update_url(ota_url, strlen(ota_url));
+														cStringRestore();
+														iap_interface_set_update_flage(); // 设置更新标志
+														iap_interface_reset_mcu();		  // 重启
+													}
+													else
+													{
+														p_wTarget = AddressConvert_Com3(Lw_Com3RegAddr);
+
+														for (k = 0; k < Txd2Buffer[5]; k++) // Rcv0Buffer[5]=字数
+														{
+															m = *(p_bGen + 7 + k * 2);
+															n = *(p_bGen + 7 + k * 2 + 1);
+															*(p_wTarget + k) = (m << 8) + n;
+														}
 													}
 												}
 												else if (Lw_Com3RegAddr >= 63000 && Lw_Com3RegAddr < 64000)
@@ -1754,7 +1791,7 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 										Txd3TmpBuffer[1] = Txd2Buffer[1];	   // 功能码			ZCL 2019.3.12 这里比较特殊，用的Txd2Buffer
 										Txd3TmpBuffer[2] = Txd2Buffer[2];	   // 　
 										Txd3TmpBuffer[3] = Txd2Buffer[3];	   //
-										if (Txd2Buffer[5] <= 30)			   // ZCL 2021.11.17  限制数量
+										if (Txd2Buffer[5] <= COM16_MAX_NUM)	   // ZCL 2021.11.17  限制数量
 										{
 											Txd3TmpBuffer[4] = Txd2Buffer[4]; //
 											Txd3TmpBuffer[5] = Txd2Buffer[5]; //
@@ -1822,26 +1859,34 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 										j = Txd2Buffer[2];
 										Lw_Com3RegAddr = (j << 8) + Txd2Buffer[3];
 
-										// 这是预置本机的 设定参数； 这里我们需要的是预置 LORA从机的参数，需要转发的！
-										/* 									if ( Txd2Buffer[5] < 30 )			//ZCL 2021.11.17  限制下
-																			{
-																				p_bGen = Txd2Buffer;
-																				p_wTarget = w_ParLst;
-																				for ( k = 0; k < Txd2Buffer[5] ; k++ )		// Rcv0Buffer[5]=字数
-																				{
-																					m = *( p_bGen + 7 + k * 2 );
-																					n = *( p_bGen + 7 + k * 2 + 1 );
-																					*( p_wTarget + Lw_Com3RegAddr + k ) = ( m << 8 ) + n;
-																				}
-																			} */
+										p_bGen = Txd2Buffer;
 
-										// ZCL 2021.11.17 转发指令
-										B_LoraSendWrite = 1; // ZCL 2021.11.17
-										B_LoraSendWriteLength = len2;
-
-										for (j = 0; j < B_LoraSendWriteLength; j++) // Rcv0Buffer[5]=字数
+										if (Lw_Com3RegAddr == 0xF24E) // 62030，OTA升级地址，
 										{
-											LoRaTxBuf2[j] = Txd2Buffer[j];
+											// 存储 url 到 flash
+											p_wTarget_char = ota_url;
+
+											for (k = 0; k < Txd2Buffer[6]; k++) // Rcv0Buffer[5]=字数
+											{
+												m_u8 = *(p_bGen + 7 + k);
+												*(p_wTarget_char + k) = m_u8;
+											}
+
+											iap_interface_set_update_url(ota_url, strlen(ota_url));
+											cStringRestore();
+											iap_interface_set_update_flage(); // 设置更新标志
+											iap_interface_reset_mcu();		  // 重启
+										}
+										else
+										{
+											// ZCL 2021.11.17 转发指令
+											B_LoraSendWrite = 1; // ZCL 2021.11.17
+											B_LoraSendWriteLength = len2;
+
+											for (j = 0; j < B_LoraSendWriteLength; j++) // Rcv0Buffer[5]=字数
+											{
+												LoRaTxBuf2[j] = Txd2Buffer[j];
+											}
 										}
 									}
 								}
@@ -4740,7 +4785,7 @@ void Com3_ReceiveData(void)
 				{
 					if (p1_TmpBuf[i] == 0x0D) // 说明数据长度字符串内容没有了
 					{
-						ReceiveGPRSBufOneDateLen = atoi(&p1_TmpBuf[0], i); // 转换为16进制
+						ReceiveGPRSBufOneDateLen = my_atoi(&p1_TmpBuf[0], i); // 转换为16进制
 
 						ReceiveGPRSBufTwoDateLen = 0;
 						ReceiveGPRSBufThreeDateLen = 0;
@@ -4802,7 +4847,7 @@ void Com3_ReceiveData(void)
 				{
 					if (p1_TmpBuf[i] == 0x0D) // 说明数据长度字符串内容没有了
 					{
-						ReceiveGPRSBufTwoDateLen = atoi(&p1_TmpBuf[0], i); // 转换为16进制
+						ReceiveGPRSBufTwoDateLen = my_atoi(&p1_TmpBuf[0], i); // 转换为16进制
 
 						ReceiveGPRSBufOneDateLen = 0;
 						ReceiveGPRSBufThreeDateLen = 0;
@@ -4863,7 +4908,7 @@ void Com3_ReceiveData(void)
 				{
 					if (p1_TmpBuf[i] == 0x0D) // 说明数据长度字符串内容没有了
 					{
-						ReceiveGPRSBufThreeDateLen = atoi(&p1_TmpBuf[0], i); // 转换为16进制
+						ReceiveGPRSBufThreeDateLen = my_atoi(&p1_TmpBuf[0], i); // 转换为16进制
 
 						ReceiveGPRSBufOneDateLen = 0;
 						ReceiveGPRSBufTwoDateLen = 0;
@@ -4924,7 +4969,7 @@ void Com3_ReceiveData(void)
 				{
 					if (p1_TmpBuf[i] == 0x0D) // 说明数据长度字符串内容没有了
 					{
-						ReceiveGPRSBufFourDateLen = atoi(&p1_TmpBuf[0], i); // 转换为16进制
+						ReceiveGPRSBufFourDateLen = my_atoi(&p1_TmpBuf[0], i); // 转换为16进制
 
 						ReceiveGPRSBufOneDateLen = 0;
 						ReceiveGPRSBufTwoDateLen = 0;
@@ -5146,40 +5191,40 @@ void DomainNameResolution(void)
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link1IP1 = atoi(&p_TmpBuf[0], i); // 转换为16进制
-					GprsPar[Ip0Base] = Pw_Link1IP1;		 // YLS 2022.12.27
-					k = i + 1;							 // IP下一位的值
-					break;								 //
+					Pw_Link1IP1 = my_atoi(&p_TmpBuf[0], i); // 转换为16进制
+					GprsPar[Ip0Base] = Pw_Link1IP1;			// YLS 2022.12.27
+					k = i + 1;								// IP下一位的值
+					break;									//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link1IP2 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip0Base + 1] = Pw_Link1IP2;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link1IP2 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip0Base + 1] = Pw_Link1IP2;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link1IP3 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip0Base + 2] = Pw_Link1IP3;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link1IP3 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip0Base + 2] = Pw_Link1IP3;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x22)
 				{
-					Pw_Link1IP4 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip0Base + 3] = Pw_Link1IP4;		 // YLS 2022.12.27
-					k = 0;									 //
-					break;									 //
+					Pw_Link1IP4 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip0Base + 3] = Pw_Link1IP4;			// YLS 2022.12.27
+					k = 0;										//
+					break;										//
 				}
 			}
 		}
@@ -5201,40 +5246,40 @@ void DomainNameResolution(void)
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link2IP1 = atoi(&p_TmpBuf[0], i); // 转换为16进制
-					GprsPar[Ip1Base] = Pw_Link2IP1;		 // YLS 2022.12.27
-					k = i + 1;							 // IP下一位的值
-					break;								 //
+					Pw_Link2IP1 = my_atoi(&p_TmpBuf[0], i); // 转换为16进制
+					GprsPar[Ip1Base] = Pw_Link2IP1;			// YLS 2022.12.27
+					k = i + 1;								// IP下一位的值
+					break;									//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link2IP2 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip1Base + 1] = Pw_Link2IP2;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link2IP2 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip1Base + 1] = Pw_Link2IP2;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link2IP3 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip1Base + 2] = Pw_Link2IP3;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link2IP3 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip1Base + 2] = Pw_Link2IP3;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x22)
 				{
-					Pw_Link2IP4 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip1Base + 3] = Pw_Link2IP4;		 // YLS 2022.12.27
-					k = 0;									 //
-					break;									 //
+					Pw_Link2IP4 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip1Base + 3] = Pw_Link2IP4;			// YLS 2022.12.27
+					k = 0;										//
+					break;										//
 				}
 			}
 		}
@@ -5256,40 +5301,40 @@ void DomainNameResolution(void)
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link3IP1 = atoi(&p_TmpBuf[0], i); // 转换为16进制
-					GprsPar[Ip2Base] = Pw_Link3IP1;		 // YLS 2022.12.27
-					k = i + 1;							 // IP下一位的值
-					break;								 //
+					Pw_Link3IP1 = my_atoi(&p_TmpBuf[0], i); // 转换为16进制
+					GprsPar[Ip2Base] = Pw_Link3IP1;			// YLS 2022.12.27
+					k = i + 1;								// IP下一位的值
+					break;									//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link3IP2 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip2Base + 1] = Pw_Link3IP2;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link3IP2 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip2Base + 1] = Pw_Link3IP2;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link3IP3 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip2Base + 2] = Pw_Link3IP3;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link3IP3 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip2Base + 2] = Pw_Link3IP3;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x22)
 				{
-					Pw_Link3IP4 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip2Base + 3] = Pw_Link3IP4;		 // YLS 2022.12.27
-					k = 0;									 //
-					break;									 //
+					Pw_Link3IP4 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip2Base + 3] = Pw_Link3IP4;			// YLS 2022.12.27
+					k = 0;										//
+					break;										//
 				}
 			}
 		}
@@ -5311,40 +5356,40 @@ void DomainNameResolution(void)
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link4IP1 = atoi(&p_TmpBuf[0], i); // 转换为16进制
-					GprsPar[Ip3Base] = Pw_Link4IP1;		 // YLS 2022.12.27
-					k = i + 1;							 // IP下一位的值
-					break;								 //
+					Pw_Link4IP1 = my_atoi(&p_TmpBuf[0], i); // 转换为16进制
+					GprsPar[Ip3Base] = Pw_Link4IP1;			// YLS 2022.12.27
+					k = i + 1;								// IP下一位的值
+					break;									//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link4IP2 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip3Base + 1] = Pw_Link4IP2;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link4IP2 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip3Base + 1] = Pw_Link4IP2;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x2E)
 				{
-					Pw_Link4IP3 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip3Base + 2] = Pw_Link4IP3;		 // YLS 2022.12.27
-					k = i + 1;								 // IP下一位的值
-					break;									 //
+					Pw_Link4IP3 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip3Base + 2] = Pw_Link4IP3;			// YLS 2022.12.27
+					k = i + 1;									// IP下一位的值
+					break;										//
 				}
 			}
 			for (i = k; i <= 3 + k; i++) // 转化为16进制数
 			{
 				if (p_TmpBuf[i] == 0x22)
 				{
-					Pw_Link4IP4 = atoi(&p_TmpBuf[k], i - k); // 转换为16进制
-					GprsPar[Ip3Base + 3] = Pw_Link4IP4;		 // YLS 2022.12.27
-					k = 0;									 //
-					break;									 //
+					Pw_Link4IP4 = my_atoi(&p_TmpBuf[k], i - k); // 转换为16进制
+					GprsPar[Ip3Base + 3] = Pw_Link4IP4;			// YLS 2022.12.27
+					k = 0;										//
+					break;										//
 				}
 			}
 		}
@@ -5538,5 +5583,26 @@ void Fill_Dtu_Par(void)
 	// e.末尾
 	Txd3Buffer[Cw_Txd3Max++] = 0x7B; // 结束标志
 	w_StringLength = Cw_Txd3Max;
+}
+
+unsigned int my_atoi(unsigned char *s, unsigned char sz)
+{
+	unsigned int i;
+	unsigned int n = 0;
+	unsigned char *p;
+	p = s;
+	if (sz != 0) // 长度不等于0
+	{
+		for (i = 0; i < sz; i++)
+		{
+			if (*(p + i) >= '0' && *(p + i) <= '9')
+			{
+				n = 10 * n + (*(p + i) - '0');
+			}
+		}
+		return n;
+	}
+	else // 否则返回为空
+		return NULL;
 }
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

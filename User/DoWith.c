@@ -160,10 +160,10 @@ void AnologIn(void)
 void Variable_Init(void) //	变量初始化
 {
 	// ZCL 2018.8.3  w_Scr 液晶屏的参数数组，ParType:4
-	w_ScrVERSION = 531; // 软件版本号 VERSION	// 2017.9.13 -3 2018.7.17
+	w_ScrVERSION = 533; // 软件版本号 VERSION	// 2017.9.13 -3 2018.7.17
 
 	w_ScrWriteYear = 2025; // 程序编写年
-	w_ScrWriteDate = 221;  // 程序编写日期
+	w_ScrWriteDate = 616;  // 程序编写日期
 
 	w_GprsSoftVer = 109;		// 软件版本号 VERSION
 	C_PowenOnDelay = 0;			// 上电延时后,进行其他判断或者动作
@@ -284,7 +284,7 @@ void GprsArrayRead(uchar *p_Top, uc8 *p_Base, uint w_GprsReadSize)
 void Boot_ParLst(void) // 初始化设定参数
 {
 	uchar i = 0;
-
+	u16 EquipmentType_tmp;
 	u16 nw_i, nw_j, nw_k, nw_l; // ZCL 2019.9.11
 
 	// w_GprsModPar=2000,可以修改参数	// w_GprsParInitial==4321 初始化参数
@@ -326,7 +326,30 @@ void Boot_ParLst(void) // 初始化设定参数
 		// 2016.5.24 dtuid号，初始化的时候不修改DTU号。恢复DTU号
 		for (m = 0; m < 11; m++)
 			GprsPar[DtuNoBase + m] = DtuID[m];
-		// ZCL 2017.5.27 上面仿真调试的时候，打开！
+
+		// 针对高压电机，增加一路通道 YLS 2025.3.14
+		if (Pw_EquipmentType == 2)
+		{
+			// 增加一路通道的IP地址47.93.6.250:5007
+			GprsPar[Ip0Base] = 47;
+			GprsPar[Ip0Base + 1] = 93;
+			GprsPar[Ip0Base + 2] = 6;
+			GprsPar[Ip0Base + 3] = 250;
+
+			// 增加一路通道的DSC端口号:5007
+			GprsPar[Port0Base] = 0x13;
+			GprsPar[Port0Base + 1] = 0x8F;
+
+			// 增加一路通道的IP地址47.93.6.250:5009
+			GprsPar[Ip2Base] = 47;
+			GprsPar[Ip2Base + 1] = 93;
+			GprsPar[Ip2Base + 2] = 6;
+			GprsPar[Ip2Base + 3] = 250;
+
+			// 增加一路通道的DSC端口号:5009
+			GprsPar[Port2Base] = 0x13;
+			GprsPar[Port2Base + 1] = 0x91;
+		}
 
 		// ZCL 2019.9.11 这几个用于供水画面的SCR参数，不进行初始化，只能手动修改。
 		nw_i = Pw_ScrKeyMode;
@@ -334,7 +357,14 @@ void Boot_ParLst(void) // 初始化设定参数
 		nw_k = Pw_ScrCurrentBits;
 		nw_l = Pw_ScrEquipPower;
 
+		// 保存设备类型参数
+		EquipmentType_tmp = Pw_EquipmentType;
+
+		// 参数恢复初始化
 		ParArrayRead(w_GprsParLst, w_GprsParBootLst, SCR_PAR_SIZE); // 读出初始化参数
+
+		// 恢复保存的设备类型参数，不进行初始化
+		Pw_EquipmentType = EquipmentType_tmp;
 
 		Pw_ScrKeyMode = nw_i;
 		Pw_ScrMenuMode = nw_j;
@@ -1599,26 +1629,11 @@ void ParLimit(void) // 参数限制
 	if (Pw_LoRaSetRxPacketTimeOut < 10 || Pw_LoRaSetRxPacketTimeOut > 6000)
 		Pw_LoRaSetRxPacketTimeOut = 1000;
 
-	// ZCL 2020.4.8 进行限制
-	if (Pw_LoRaMasterSlaveSel > 1)
-		Pw_LoRaMasterSlaveSel = 0;
+	if (Pw_LoRaMasterSlaveSel != 1)
+	{
+		Pw_LoRaMasterSlaveSel = 1; // 限制只能作为主机使用 YLS 2025.03.26
+	}
 
-	// ZCL 2019.4.2
-	if (Pw_LoRaMasterSlaveSel == 1)
-	{
-		// Pw_LoRaSet=1;			//ZCL 2019.11.21 注释掉
-		// Pw_GprsSet=9;			//ZCL 2019.11.21 注释掉
-		// Pw_LoRaEquipmentNo = 2;
-		// if (Pw_LoRaModule1Add < 3)
-		// 	Pw_LoRaModule1Add = 3;
-	}
-	else if (Pw_LoRaMasterSlaveSel == 0)
-	{
-		// Pw_LoRaSet=1;			//ZCL 2019.11.21 注释掉
-		// Pw_GprsSet=0;			//ZCL 2019.11.21 注释掉
-		if (Pw_LoRaEquipmentNo < 3)
-			Pw_LoRaEquipmentNo = 3;
-	}
 	// 强制重启时间间隔
 	if (Pw_RebootInterval < 5)
 	{
@@ -1628,7 +1643,13 @@ void ParLimit(void) // 参数限制
 	// 对设备类型进行限制
 	if (Pw_EquipmentType > 2)
 	{
-		Pw_EquipmentType = 0;
+		Pw_EquipmentType = 0; //=0双驱泵；=1变频电机；=2高压电机
+	}
+
+	// 对参数区域进行限制
+	if (w_SelectParArea > 4)
+	{
+		w_SelectParArea = 0; //=0 w_DNBParLst区；=1 Pw_ParLst区；=2 w_ParLst区；=3 w_GprsParLst区；=4 GprsPar区
 	}
 }
 

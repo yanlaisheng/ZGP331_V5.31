@@ -494,11 +494,6 @@ void Com4_SlaveSend(void) // 串口2从机发送
 						B_Com4Cmd06 = 0;
 					}
 				}
-				/* 			else
-							{
-								p_wTarget=w_dspParLst;			// 读DSP PAR区
-								Lw_Com4RegAddr=Lw_Com4RegAddr-DSP_RPAR_ADDRESS;
-							}				 */
 
 				if (B_Com4Cmd06) // 预置单个
 				{

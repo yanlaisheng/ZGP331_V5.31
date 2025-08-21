@@ -8218,25 +8218,26 @@ void Menu_LoRaSetPar5(void) // 画面 LoRa设定参数，页面号：548
 
 		// LCD12864_ClrText();          //清屏
 		// 第一行
-		LCD12864_String(0x80, "发送超时      ");
-		LCD12864_String(0x87, "ms");
+		LCD12864_String(0x80, "特殊协议");
+		LCD12864_String(0x87, "  ");
 		// 第二行
-		LCD12864_String(0x90, "接收超时      ");
+		LCD12864_String(0x90, "发送超时      ");
 		LCD12864_String(0x97, "ms");
 		// 第三行
-		LCD12864_String(0x88, "空中速率      ");
-		LCD12864_String(0x8F, "kb");
+		LCD12864_String(0x88, "接收超时      ");
+		LCD12864_String(0x8F, "ms");
 		// 第四行
-		LCD12864_String(0x98, "                 ");
-		LCD12864_String(0x9F, "  "); // ZCL 2018.7.30 原先0x97不好，这里因为(01)占2个字，应该用0x96
+		LCD12864_String(0x98, "空中速率      ");
+		LCD12864_String(0x9F, "kb");
 	}
 
-	ModParNum(2);
+	ModParNum(3);
 	// 显示和修改参数
-	DispMod_Par(0x84, 0x05, 0x00, &Pw_LoRaSetTxPacketTimeOut, 4, F_ModPar1);
-	DispMod_Par(0x94, 0x05, 0x00, &Pw_LoRaSetRxPacketTimeOut, 4, F_ModPar2);
-	DispMod_Par(0x8C, 0x04, 0x02, &w_LoRaDateRate, 5, 0); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
-	// DispMod_Par(0x9C, 0x05, 0x00, &Pw_LoRaSetRxSingleOn, 4, F_ModPar4);
+	DispMod_Par(0x84, 0x05, 0x00, &w_ZhouShanProtocol, 4, F_ModPar1);	   //=0，通用协议；=1，舟山特殊协议
+	DispMod_Par(0x94, 0x05, 0x00, &Pw_LoRaSetTxPacketTimeOut, 4, F_ModPar2);
+	DispMod_Par(0x8C, 0x05, 0x00, &Pw_LoRaSetRxPacketTimeOut, 4, F_ModPar3);
+	DispMod_Par(0x9C, 0x04, 0x02, &w_LoRaDateRate, 5, 0); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
+	
 	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
 
 	// 读参数
@@ -8280,6 +8281,69 @@ void Menu_LoRaSetPar6(void) // 画面 LoRa设定参数，页面号：549
 
 void Menu_LoRaSetPar7(void) // 画面 LoRa设定参数，页面号：550
 {
+	u16 *p;
+	u8 *p_u8;
+	if (Lw_SavePageNo != Lw_PageNo)
+	{
+		Lw_SavePageNo = Lw_PageNo;
+		EnterMenu_InitPar(); // 进入菜单初始化参数； ZCL 2018.5.15
+
+		// LCD12864_ClrText();          //清屏
+		// 第一行
+		LCD12864_String(0x80, "参数区域        ");
+		LCD12864_String(0x87, "区");
+		// 第二行
+		LCD12864_String(0x90, "参数地址        ");
+		LCD12864_String(0x97, "  ");
+		// 第三行
+		LCD12864_String(0x88, "参数值          ");
+		LCD12864_String(0x8F, "  ");
+		// 第四行
+		// LCD12864_String(0x98, "(0双驱，1=变频) ");
+		LCD12864_String(0x98, "                 ");
+		// LCD12864_String(0x9F, "  ");
+	}
+
+	if (w_SelectParArea <= 3)
+	{
+		if (w_SelectParArea == 0)
+		{
+			p = w_DNBParLst;
+		}
+		else if (w_SelectParArea == 1)
+		{
+			p = Pw_ParLst;
+		}
+		else if (w_SelectParArea == 2)
+		{
+			p = w_ParLst;
+		}
+		else if (w_SelectParArea == 3)
+		{
+			p = w_GprsParLst;
+		}
+		w_SelectParValue = *(p + w_SelectParAddress);
+	}
+	else if (w_SelectParArea == 4)
+	{
+		p_u8 = GprsPar;
+		w_SelectParValue = *(p_u8 + w_SelectParAddress);
+	}
+
+	ModParNum(3);
+	// 显示和修改参数
+	DispMod_Par(0x84, 0x05, 0x00, &w_SelectParArea, 4, F_ModPar1);
+	DispMod_Par(0x94, 0x05, 0x00, &w_SelectParAddress, 4, F_ModPar2);
+	DispMod_Par(0x8C, 0x05, 0x00, &w_SelectParValue, 1, F_ModPar3); // 类型4和5，在DispMod_Par()中没有用 ZCL 2018.8.3
+	// DispMod_Par(0x9D, 0x03, 0x00, &Pw_ConsoleInfo, 4, F_ModPar4);
+	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
+
+	// 读参数
+	ReadBPDJPar2(); // ZCL 2019.4.3 在无参数画面，液晶屏也可以读DSP,ARM板参数
+}
+
+void Menu_LoRaSetPar8(void) // 画面 LoRa设定参数，页面号：551
+{
 	if (Lw_SavePageNo != Lw_PageNo)
 	{
 		Lw_SavePageNo = Lw_PageNo;
@@ -8303,7 +8367,7 @@ void Menu_LoRaSetPar7(void) // 画面 LoRa设定参数，页面号：550
 	ModParNum(0);
 	// 显示和修改参数
 	DispMod_Par(0x84, 0x05, 0x02, &w_ScrVERSION, 5, 0);
-	DispMod_Par(0x94, 0x05, 0x00, &w_ScrWriteYear, 1, 0); // ZCL 2019.4.3
+	DispMod_Par(0x94, 0x05, 0x00, &w_ScrWriteYear, 1, 0);
 	DispMod_Par(0x8C, 0x05, 0x00, &w_ScrWriteDate, 1, 0);
 	DispMod_Par(0x9C, 0x05, 0x00, &w_S_M35, 1, 0);
 	S_DisplayPar = 0; // 显示参数结束，清零S_DisplayPar，再次延时
@@ -8643,7 +8707,7 @@ void Menu_Dsp1ReadPar2(void) // 画面 DSP读参数
 			if (B_LoRaErrWithModule1 == 0)
 			{
 				// 第四行
-				LCD12864_String(0x98, "DNB 计数器");
+				LCD12864_String(0x98, "BPQ 计数器");
 				LCD12864_String(0x9F, "  ");
 			}
 			else
@@ -9330,7 +9394,7 @@ void Menu_Dsp2ReadPar2(void) // 画面 DSP读参数
 			if (B_LoRaErrWithModule2 == 0)
 			{
 				// 第四行
-				LCD12864_String(0x98, "DNB 计数器");
+				LCD12864_String(0x98, "BPQ 计数器");
 				LCD12864_String(0x9F, "  ");
 			}
 			else
@@ -9933,7 +9997,7 @@ void Menu_Dsp3ReadPar2(void) // 画面 DSP读参数
 			if (B_LoRaErrWithModule3 == 0)
 			{
 				// 第四行
-				LCD12864_String(0x98, "DNB 计数器");
+				LCD12864_String(0x98, "BPQ 计数器");
 				LCD12864_String(0x9F, "  ");
 			}
 			else
@@ -10536,7 +10600,7 @@ void Menu_Dsp4ReadPar2(void) // 画面 DSP读参数
 			if (B_LoRaErrWithModule4 == 0)
 			{
 				// 第四行
-				LCD12864_String(0x98, "DNB 计数器");
+				LCD12864_String(0x98, "BPQ 计数器");
 				LCD12864_String(0x9F, "  ");
 			}
 			else
@@ -11120,7 +11184,7 @@ void Menu_Dsp5ReadPar2(void) // 画面 DSP读参数
 			if (B_LoRaErrWithModule5 == 0)
 			{
 				// 第四行
-				LCD12864_String(0x98, "DNB 计数器");
+				LCD12864_String(0x98, "BPQ 计数器");
 				LCD12864_String(0x9F, "  ");
 			}
 			else
@@ -13488,7 +13552,28 @@ void DispMod_Par(u8 x_pos, u8 length, u8 XiaoShuBits, u16 *Address, u8 ParType, 
 													*Address=w_ScrSaveKeyMode;
 												else		//正常顺序 */
 
-						*Address = Lw_SaveSetValue;
+						if (Lw_PageNo == 550) // 只在参数选择页面才根据地址修改参数
+						{
+							if (nb_modpar == 0x03 && w_GprsModPar == 3000) // 口令是3000，并且当前是第3个参数值
+							{
+								if (w_SelectParArea == 0)
+									w_DNBParLst[w_SelectParAddress] = Lw_SaveSetValue;
+								else if (w_SelectParArea == 1)
+									Pw_ParLst[w_SelectParAddress] = Lw_SaveSetValue;
+								else if (w_SelectParArea == 2)
+									w_ParLst[w_SelectParAddress] = Lw_SaveSetValue;
+								else if (w_SelectParArea == 3)
+									w_GprsParLst[w_SelectParAddress] = Lw_SaveSetValue;
+								else if (w_SelectParArea == 4)
+									GprsPar[w_SelectParAddress] = Lw_SaveSetValue;
+							}
+							else
+								*Address = Lw_SaveSetValue;
+						}
+						else
+						{
+							*Address = Lw_SaveSetValue;
+						}
 
 						EnterMenu_InitPar(); // ZCL 2018.5.17 测试
 
@@ -13725,7 +13810,7 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 						Lw_PageNo--;
 
 						if (Lw_PageNo == 999 - 1) // ZCL 2019.4.5
-							Lw_PageNo = 565;
+							Lw_PageNo = 566;
 
 						if (Pw_EquipmentType == 0) // 双驱泵
 						{
@@ -13749,7 +13834,7 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 					{
 						Lw_PageNo++;
 
-						if (Lw_PageNo == 565 + 1) // ZCL 2019.4.5
+						if (Lw_PageNo == 566 + 1) // ZCL 2019.4.5
 							Lw_PageNo = 999;
 
 						if (Pw_EquipmentType == 0) // 双驱泵
@@ -13842,36 +13927,36 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 			}
 			else if (Lw_PageNo == 544 && B_RightKeyCount == 2)
 			{
-				Lw_PageNo = 548;
+				Lw_PageNo = 549;
 				B_RightKeyCount = 0;
 				B_LeftKeyCount = 0;
 			}
-			else if (Lw_PageNo == 548 && B_RightKeyCount == 2)
+			else if (Lw_PageNo == 549 && B_RightKeyCount == 2)
 			{
-				Lw_PageNo = 551;
+				Lw_PageNo = 552;
 				B_RightKeyCount = 0;
 				B_LeftKeyCount = 0;
 			}
-			else if (Lw_PageNo == 551 && B_RightKeyCount == 2)
+			else if (Lw_PageNo == 552 && B_RightKeyCount == 2)
 			{
-				Lw_PageNo = 555;
+				Lw_PageNo = 556;
 				B_RightKeyCount = 0;
 				B_LeftKeyCount = 0;
 			}
-			else if (Lw_PageNo == 555 && B_RightKeyCount == 2)
+			else if (Lw_PageNo == 556 && B_RightKeyCount == 2)
 			{
-				Lw_PageNo = 559;
+				Lw_PageNo = 560;
 				B_RightKeyCount = 0;
 				B_LeftKeyCount = 0;
 			}
-			else if (Lw_PageNo == 559 && B_RightKeyCount == 2)
+			else if (Lw_PageNo == 560 && B_RightKeyCount == 2)
 			{
-				Lw_PageNo = 565;
+				Lw_PageNo = 566;
 				B_RightKeyCount = 0;
 				B_LeftKeyCount = 0;
 			}
 
-			else if (Lw_PageNo == 565 && B_RightKeyCount == 2) // ZCL 2019.10.19 551
+			else if (Lw_PageNo == 566 && B_RightKeyCount == 2) // ZCL 2019.10.19 551
 			{
 				Lw_PageNo = 999;
 				B_RightKeyCount = 0;
@@ -13963,37 +14048,37 @@ void GetKey(void) // ZCL 得到按键的键值 2013.12.07
 			}
 			else if (Lw_PageNo == 544 && B_LeftKeyCount == 2)
 			{
-				Lw_PageNo = 548;
+				Lw_PageNo = 549;
 				B_LeftKeyCount = 0;
 				B_RightKeyCount = 0;
 			}
-			else if (Lw_PageNo == 548 && B_LeftKeyCount == 2)
+			else if (Lw_PageNo == 549 && B_LeftKeyCount == 2)
 			{
-				Lw_PageNo = 551;
+				Lw_PageNo = 552;
 				B_LeftKeyCount = 0;
 				B_RightKeyCount = 0;
 			}
 
-			else if (Lw_PageNo == 551 && B_LeftKeyCount == 2)
+			else if (Lw_PageNo == 552 && B_LeftKeyCount == 2)
 			{
-				Lw_PageNo = 555;
+				Lw_PageNo = 556;
 				B_LeftKeyCount = 0;
 				B_RightKeyCount = 0;
 			}
-			else if (Lw_PageNo == 555 && B_LeftKeyCount == 2)
+			else if (Lw_PageNo == 556 && B_LeftKeyCount == 2)
 			{
-				Lw_PageNo = 559;
+				Lw_PageNo = 560;
 				B_LeftKeyCount = 0;
 				B_RightKeyCount = 0;
 			}
-			else if (Lw_PageNo == 559 && B_LeftKeyCount == 2)
+			else if (Lw_PageNo == 560 && B_LeftKeyCount == 2)
 			{
-				Lw_PageNo = 565;
+				Lw_PageNo = 566;
 				B_LeftKeyCount = 0;
 				B_RightKeyCount = 0;
 			}
 
-			else if (Lw_PageNo == 565 && B_LeftKeyCount == 2) // ZCL 2019.10.19 551
+			else if (Lw_PageNo == 566 && B_LeftKeyCount == 2) // ZCL 2019.10.19 551
 			{
 				Lw_PageNo = 999;
 				B_LeftKeyCount = 0;
@@ -14697,58 +14782,60 @@ void Menu_Change(void) // 根据页序号，显示相应的画面
 	case 549:
 		Menu_LoRaSetPar6();
 		break; //
-
 	case 550:
 		Menu_LoRaSetPar7();
 		break; // ZCL 2019.9.24
-
 	case 551:
+		Menu_LoRaSetPar8();
+		break; //
+
+	case 552:
 		Menu_GprsReadPar1();
 		break; //
-	case 552:
+	case 553:
 		Menu_GprsReadPar2();
 		break; //
-	case 553:
+	case 554:
 		Menu_GprsReadPar3();
 		break; //
-	case 554:
+
+	case 555:
 		Menu_GprsReadPar4();
 		break; //
 
 	// ZCL 2019.10.19 增加可以改动 YW310 SZM220参数
-	case 555:
+	case 556:
 		Menu_YW310Par1();
 		break; //
-	case 556:
+	case 557:
 		Menu_YW310Par2();
 		break; //
-	case 557:
+	case 558:
 		Menu_YW310Par3();
+		break; //		ZCL 2019.10.21
+	case 559:
+		Menu_YW310Par4();
 		break; //
 
-	case 558:
-		Menu_YW310Par4();
-		break; //		ZCL 2019.10.21
-
-	case 559:
+	case 560:
 		Menu_SZM220Par1();
 		break; //
-	case 560:
+	case 561:
 		Menu_SZM220Par2();
 		break; //
-	case 561:
+	case 562:
 		Menu_SZM220Par3();
 		break; //
-	case 562:
+	case 563:
 		Menu_SZM220Par4();
 		break; //
-	case 563:
+	case 564:
 		Menu_SZM220Par5();
 		break; //
-	case 564:
+	case 565:
 		Menu_SZM220Par6();
 		break; //
-	case 565:
+	case 566:
 		Menu_SZM220Par7();
 		break; //
 

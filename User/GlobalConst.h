@@ -68,7 +68,7 @@ typedef volatile unsigned short int vu16;
 
 #define LatLonPage_SQB 2000 // ZCL 2018.10.28 经纬度页面  218  2023.2.2
 #define LatLonPage2_SQB 500 // ZCL 2018.10.28 经纬度页面2
-#define DTUIDPage_SQB 551	// ZCL 2019.4.4 DTU ID 页面   519  2023.2.2
+#define DTUIDPage_SQB 552	// ZCL 2019.4.4 DTU ID 页面   519  2023.2.2
 
 #define LatLonPage_BPDJ 218	 // ZCL 2018.10.28 经纬度页面
 #define LatLonPage2_BPDJ 500 // ZCL 2018.10.28 经纬度页面2
@@ -328,6 +328,7 @@ typedef volatile unsigned short int vu16;
 // YLS 2025.03.01
 #define GPRS_WRPAR_ADDRESS 60000 // 读写参数地址；GprsPar，访问时偏移60000访问
 
+#define COM16_MAX_NUM 100 // 2025.03.13 限制数量
 // 备注：这是ARM DCM100中FM25L16的分配
 //-------特殊保存内容地址区；96个字节（可以整除32）
 #define FMADD_FLASH_REC_NO 640	// FLASH记录序号
@@ -1871,9 +1872,9 @@ typedef volatile unsigned short int vu16;
 #define w_ZhouShanProtocol_bit7 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 7)) // =0，发送32个字；=1，发送40个字
 
 #define w_ZhouShanProtocol_bit8 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 8))   // 串口2发送协议，=0，通用协议；=1，舟山协议
-#define w_ZhouShanProtocol_bit9 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 9))   // 串口1主动发送，=1，主动发送，=0，不主动发送
-#define w_ZhouShanProtocol_bit10 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 10)) // 串口1进行LoRa监控数据收发，=1，监控，=0，不监控
-#define w_ZhouShanProtocol_bit11 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 11)) // 保留
+#define w_ZhouShanProtocol_bit9 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 9))   // 串口1主动发送，=1，主动发送，=0，不主动发送(512)
+#define w_ZhouShanProtocol_bit10 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 10)) // 串口1进行LoRa监控数据收发，=1，监控，=0，不监控(1024)
+#define w_ZhouShanProtocol_bit11 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 11)) // =0，CREG(2G)注册网络；=1，CEREG(4G)注册网络(2048)
 
 #define w_ZhouShanProtocol_bit12 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 12)) // 保留
 #define w_ZhouShanProtocol_bit13 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 13)) // 保留
@@ -1918,17 +1919,9 @@ typedef volatile unsigned short int vu16;
 #define w_ScrGpsLonFen1 w_GprsParLst[82] //.0 经度 分；		dddmm.mmmm之mm
 #define w_ScrGpsLonFen2 w_GprsParLst[83] //.0 经度 分；		dddmm.mmmm之mmmm
 
-// ZCL 2019.3.20说明
-//  w_ScrGpsLatAllDu1 和 w_ScrGpsLatAllDu2 合起来是纬度
-//  w_ScrGpsLonAllDu1 和 w_ScrGpsLonAllDu2 合起来是经度
-
-// #define	w_ScrGpsLatAllDu1				w_GprsParLst[84]		//.2 纬度 度1； 如：35.44			2位小数
-// #define	w_ScrGpsLatAllDu2				w_GprsParLst[85]		//.0 纬度 度2；	00.00****			****部分，添加到w_ScrGpsLatAllDu1后面。 如：****是 2459， 则总纬度是： 35.442459
-// #define	w_ScrGpsLonAllDu1				w_GprsParLst[86]		//.2 经度 度1；	如：127.39		2位小数
-// #define	w_ScrGpsLonAllDu2				w_GprsParLst[87]		//.0 经度 度2； 00.00****			****部分，添加到w_ScrGpsLonAllDu1后面。如：****是 4628， 则总经度是： 127.394628
-
-// ZCL 2019.3.11
-// 变频电机1
+#define w_SelectParArea w_GprsParLst[84]	//.0 参数区域 YLS 2025.03.05
+#define w_SelectParAddress w_GprsParLst[85] //.0 参数地址 YLS 2025.03.05
+#define w_SelectParValue w_GprsParLst[86]	//.0 参数值 YLS 2025.03.05
 
 // ZCL 2019.3.11
 // 变频电机1
@@ -1942,13 +1935,6 @@ typedef volatile unsigned short int vu16;
 #define w_dsp1AI1ADCValue w_GprsParLst[95]	  //.0 AI1 ADC采集值 ZCL 2016.6.21
 #define w_dsp1AI2ADCValue w_GprsParLst[96]	  //.0 AI2 ADC采集值
 #define w_dsp1Counter3 w_GprsParLst[97]		  //.0 DCM220 DCM100: dsp计数器，秒
-
-// #define	w_dsp1BusBarVoltage			w_GprsParLst[93]		//.0 母线电压	0~800	x1
-// #define	w_dsp1TargetHz					w_GprsParLst[99]	//.1 目标频率	0~500	x10		暂留
-
-// #define	w_dsp1Tmp1							w_GprsParLst[13]
-// #define	w_dsp1Tmp2							w_GprsParLst[14]
-// #define	w_dsp1Tmp3							w_GprsParLst[15]
 
 // 变频电机2
 #define w_dsp2SoftVersion w_GprsParLst[98]	   //.2 DSP软件系统版本号	0~65535

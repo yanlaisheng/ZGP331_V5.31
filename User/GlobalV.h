@@ -155,4 +155,6 @@ u16 Count_Save1_No7_VVVF_Comm; // 7#泵变频器通讯计数器1
 u16 Count_Save2_No7_VVVF_Comm; // 7#泵变频器通讯计数器2
 u16 Count_Save1_No8_VVVF_Comm; // 8#泵变频器通讯计数器1
 u16 Count_Save2_No8_VVVF_Comm; // 8#泵变频器通讯计数器2
-#endif                         /* __GLOBALV_H */
+
+char ota_url[500];
+#endif /* __GLOBALV_H */

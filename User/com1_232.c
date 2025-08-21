@@ -16,7 +16,8 @@
 #include "GlobalConst.h"
 #include <stdio.h> //加上此句可以用printf
 #include "CRCdata.h"
-
+#include "iap_interface.h"
+#include "cString.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 
@@ -217,7 +218,7 @@ void Com1_RcvProcess(void)
 
 									// ZCL 2019.10.19  地址变回
 									// YW310
-									if (Lw_Reg == 9)
+									if (Lw_Reg == 9)	//表示从YW310地址9中读取的参数，写入到331内部w_ParLst[260]地址，下同
 										Lw_Reg = 260;
 									else if (Lw_Reg == 23)
 										Lw_Reg = 261;
@@ -244,7 +245,7 @@ void Com1_RcvProcess(void)
 										Lw_Reg = 267; // ZCL 2019.10.21
 
 									// SZM220
-									else if (Lw_Reg == 212)
+									else if (Lw_Reg == 212)	//表示从220地址212中读取的参数，写入到331内部w_ParLst[268]地址，下同
 										Lw_Reg = 268;
 									else if (Lw_Reg == 213)
 										Lw_Reg = 269;
@@ -285,6 +286,15 @@ void Com1_RcvProcess(void)
 
 									p_wRead += Lw_Reg;
 									B_ModYW310SZM220 = 0;
+
+									//将从220或者温度表中读取的参数写入到目标地址
+									for (i = 0; i < Rcv1Buffer[2] / 2; i++)
+									{
+										j = Rcv1Buffer[3 + i * 2];
+										*(p_wRead + i) = (j << 8) + Rcv1Buffer[4 + i * 2];
+									}
+
+									F_Com1Send = 10;
 								}
 								else if (w_ZhouShanProtocol_bit9) // 主动查询
 								{
@@ -411,6 +421,7 @@ void Com1_RcvProcess(void)
 void Com1_SlaveSend(void) // 串口1从机发送
 {
 	u16 m, n, j;
+	char m_u8;
 	u8 k;
 	u16 *p_wRead;
 	u8 *p_wRead_u8;
@@ -418,7 +429,8 @@ void Com1_SlaveSend(void) // 串口1从机发送
 	u8 *p_bGen;
 	u16 *p_wTarget;
 	u8 *p_wTarget_u8;
-	u16 Lw_Com1Addr; // 串口3寄存器地址
+	char *p_wTarget_char; // 指向目标字符串
+	u16 Lw_Com1Addr;	  // 串口3寄存器地址
 
 	if (Pw_EquipmentType == 0) // 双驱泵
 	{
@@ -520,30 +532,29 @@ void Com1_SlaveSend(void) // 串口1从机发送
 						p_wTarget_u8 += Lw_Com1RegAddr - 63000;
 						*p_wTarget_u8 = Rcv1Buffer[5]; // 修改参数
 					}
-
-					// ZCL 2021.7.10  06指令：收到的 和  返回的 是一样的。
-					Txd1Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址Pw_EquipmentNo
-					Txd1Buffer[1] = Rcv1Buffer[1];		// 功能码			ZCL 2019.3.12 这里比较特殊，用的Rcv1Buffer
-					Txd1Buffer[2] = Rcv1Buffer[2];		// 　
-					Txd1Buffer[3] = Rcv1Buffer[3];		//
-					Txd1Buffer[4] = Rcv1Buffer[4];		//
-					Txd1Buffer[5] = Rcv1Buffer[5];		//
-
-					Lw_Txd1ChkSum = CRC16(Txd1Buffer, 6);
-					Txd1Buffer[6] = Lw_Txd1ChkSum >> 8; // /256
-					Txd1Buffer[7] = Lw_Txd1ChkSum;		// 低位字节
-					Cw_Txd1Max = 8;
-					//
-					B_Com1Cmd06 = 0;
-					Cw_Txd1 = 0;
-					// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
-					B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
 				}
+				// ZCL 2021.7.10  06指令：收到的 和  返回的 是一样的。
+				Txd1Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址Pw_EquipmentNo
+				Txd1Buffer[1] = Rcv1Buffer[1];		// 功能码			ZCL 2019.3.12 这里比较特殊，用的Rcv1Buffer
+				Txd1Buffer[2] = Rcv1Buffer[2];		// 　
+				Txd1Buffer[3] = Rcv1Buffer[3];		//
+				Txd1Buffer[4] = Rcv1Buffer[4];		//
+				Txd1Buffer[5] = Rcv1Buffer[5];		//
+
+				Lw_Txd1ChkSum = CRC16(Txd1Buffer, 6);
+				Txd1Buffer[6] = Lw_Txd1ChkSum >> 8; // /256
+				Txd1Buffer[7] = Lw_Txd1ChkSum;		// 低位字节
+				Cw_Txd1Max = 8;
+				//
+				B_Com1Cmd06 = 0;
+				Cw_Txd1 = 0;
+				USART_SendData(USART1, Txd1Buffer[Cw_Txd1++]);
+				USART_ITConfig(USART1, USART_IT_TC, ENABLE); // 开始发送.
 			}
 
 			else if (B_Com1Cmd16) // 预置多个
 			{
-				if (Rcv1Buffer[5] <= 30) // ZCL 2021.11.17  限制数量
+				if (Rcv1Buffer[5] <= COM16_MAX_NUM) // ZCL 2021.11.17  限制数量
 				{
 					p_bGen = Rcv1Buffer;
 					j = Rcv1Buffer[2];
@@ -554,13 +565,32 @@ void Com1_SlaveSend(void) // 串口1从机发送
 						// 这是预置本机的 设定参数；
 						if (Lw_Com1RegAddr < 63000)
 						{
-							p_wTarget = AddressConvert_Com3(Lw_Com1RegAddr);
-
-							for (k = 0; k < Rcv1Buffer[5]; k++) // Rcv0Buffer[5]=字数
+							if (Lw_Com1RegAddr == 0xF24E)
 							{
-								m = *(p_bGen + 7 + k * 2);
-								n = *(p_bGen + 7 + k * 2 + 1);
-								*(p_wTarget + Lw_Com1RegAddr + k) = (m << 8) + n;
+								// 存储 url 到 flash
+								p_wTarget_char = ota_url;
+
+								for (k = 0; k < Rcv1Buffer[6]; k++) // Rcv0Buffer[5]=字数
+								{
+									m_u8 = *(p_bGen + 7 + k);
+									*(p_wTarget_char + k) = m_u8;
+								}
+
+								iap_interface_set_update_url(ota_url, strlen(ota_url));
+								cStringRestore();
+								iap_interface_set_update_flage(); // 设置更新标志
+								iap_interface_reset_mcu();		  // 重启
+							}
+							else
+							{
+								p_wTarget = AddressConvert_Com3(Lw_Com1RegAddr);
+
+								for (k = 0; k < Rcv1Buffer[5]; k++) // Rcv0Buffer[5]=字数
+								{
+									m = *(p_bGen + 7 + k * 2);
+									n = *(p_bGen + 7 + k * 2 + 1);
+									*(p_wTarget + k) = (m << 8) + n;
+								}
 							}
 						}
 						else if (Lw_Com1RegAddr >= 63000 && Lw_Com1RegAddr < 64000)
@@ -583,7 +613,7 @@ void Com1_SlaveSend(void) // 串口1从机发送
 				Txd1Buffer[1] = Rcv1Buffer[1];		// 功能码
 				Txd1Buffer[2] = Rcv1Buffer[2];		// 开始地址高位字节
 				Txd1Buffer[3] = Rcv1Buffer[3];		// 开始地址低位字节
-				if (Rcv1Buffer[5] <= 30)			// ZCL 2021.11.17  限制数量
+				if (Rcv1Buffer[5] <= COM16_MAX_NUM) // ZCL 2021.11.17  限制数量
 				{
 					Txd1Buffer[4] = Rcv1Buffer[4]; //
 					Txd1Buffer[5] = Rcv1Buffer[5]; //

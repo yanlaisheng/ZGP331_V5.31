@@ -16,7 +16,8 @@
 #include "GlobalV_Extern.h" // 全局变量声明
 #include "GlobalConst.h"
 #include <stdio.h> //加上此句可以用printf
-
+#include "iap_interface.h"
+#include "cString.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 
@@ -445,12 +446,14 @@ void Com2_RcvProcess(void)
 void Com2_SlaveSend(void) // 串口2从机发送
 {
 	u16 m, n, j = 0;
+	char m_u8;
 	u8 k;
 	u16 *p_wRead;
 	u8 *p_wRead_u8;
 	u8 *p_bMove;
 	u16 *p_wTarget;
 	u8 *p_wTarget_u8;
+	char *p_wTarget_char; // 指向目标字符串
 	u16 Lw_Com2Addr;
 	u8 *p_bGen;
 
@@ -519,71 +522,104 @@ void Com2_SlaveSend(void) // 串口2从机发送
 		//
 		else if (B_Com2Cmd16 || B_Com2Cmd06) // 16预置多寄存器
 		{
+			if (B_Com2Cmd06) // 预置单个
 			{
-				if (B_Com2Cmd06) // 预置单个
+				B_Com2Cmd06 = 0;
+				j = Rcv2Buffer[2];
+				Lw_Com2RegAddr = (j << 8) + Rcv2Buffer[3];
+
+				if (Lw_Com2RegAddr < 60000) // 如果地址在10000以下，就通过LoRa转发到下位机
 				{
+					w_ZhuanFaAdd = Lw_Com2RegAddr;
+					m = Rcv2Buffer[4];
+					m = (m << 8) + Rcv2Buffer[5];
+					w_ZhuanFaData = m;
+
+					if (Lw_Com2RegAddr < 10000) // 如果地址在10000以下，就通过LoRa转发到下位机
+						F_ModeParLora = 1;		// 在LoRa主动发送中，=1，转发出去，写某一台从机的启停、设定压力、设定频率这3个参数
+					else if (Lw_Com2RegAddr >= 10000 && Lw_Com2RegAddr < 60000)
+						F_ModeParLora = 3; // 在LoRa主动发送中，=3，转发出去，写某一台从机的设定参数
+				}
+				else if (Lw_Com2RegAddr >= 60000) // 如果地址在60000以上，就修改ZGP332本身的参数
+				{
+					// 这是预置本机的 设定参数；
+					if (Lw_Com2RegAddr < 63000)
+					{
+						p_wTarget = AddressConvert_Com3(Lw_Com2RegAddr);
+						m = Rcv2Buffer[4];
+						*p_wTarget = (m << 8) + Rcv2Buffer[5]; // 修改参数
+					}
+					else if (Lw_Com2RegAddr >= 63000 && Lw_Com2RegAddr < 64000)
+					{
+						p_wTarget_u8 = GprsPar; // GprsPar区按字节进行写
+						p_wTarget_u8 += Lw_Com2RegAddr - 63000;
+						*p_wTarget_u8 = Rcv2Buffer[5]; // 修改参数
+					}
+				}
+				Txd2Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址Pw_EquipmentNo
+				Txd2Buffer[1] = Rcv2Buffer[1];		// 功能码
+				Txd2Buffer[2] = Rcv2Buffer[2];		// 　
+				Txd2Buffer[3] = Rcv2Buffer[3];		//
+				Txd2Buffer[4] = Rcv2Buffer[4];		//
+				Txd2Buffer[5] = Rcv2Buffer[5];		//
+
+				Lw_Txd2ChkSum = CRC16(Txd2Buffer, 6);
+				Txd2Buffer[6] = Lw_Txd2ChkSum >> 8; // /256
+				Txd2Buffer[7] = Lw_Txd2ChkSum;		// 低位字节
+				Cw_Txd2Max = 8;
+				//
+				B_Com2Cmd06 = 0;
+				Cw_Txd2 = 0;
+				USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
+				USART_ITConfig(USART2, USART_IT_TC, ENABLE); // 开始发送.
+			}
+
+			else if (B_Com2Cmd16) // 预置多个
+			{
+				if (Rcv2Buffer[5] <= COM16_MAX_NUM) // ZCL 2022.22.27  限制数量
+				{
+					p_bGen = Rcv2Buffer;
 					j = Rcv2Buffer[2];
 					Lw_Com2RegAddr = (j << 8) + Rcv2Buffer[3];
+					// 16预置多寄存器
 
 					if (Lw_Com2RegAddr < 60000) // 如果地址在10000以下，就通过LoRa转发到下位机
 					{
-						w_ZhuanFaAdd = Lw_Com2RegAddr;
-						m = Rcv2Buffer[4];
-						m = (m << 8) + Rcv2Buffer[5];
-						w_ZhuanFaData = m;
+						if (Rcv2Buffer[4] == 0 && Rcv2Buffer[5] == 0x01 && Rcv2Buffer[6] == 0x02) // 16指令，修改地址在60000以内的寄存器，转发到下位机，只能修改1个字
+						{
+							w_ZhuanFaAdd = Lw_Com2RegAddr;
+							m = Rcv2Buffer[7];
+							m = (m << 8) + Rcv2Buffer[8];
+							w_ZhuanFaData = m;
 
-						if (Lw_Com2RegAddr < 10000) // 如果地址在10000以下，就通过LoRa转发到下位机
-							F_ModeParLora = 1;		// 在LoRa主动发送中，=1，转发出去，写某一台从机的启停、设定压力、设定频率这3个参数
-						else if (Lw_Com2RegAddr >= 10000 && Lw_Com2RegAddr < 60000)
-							F_ModeParLora = 3; // 在LoRa主动发送中，=3，转发出去，写某一台从机的设定参数
+							if (Lw_Com2RegAddr < 10000) // 如果地址在10000以下，就通过LoRa转发到下位机
+								F_ModeParLora = 1;		// 在LoRa主动发送中，=1，转发出去，写某一台从机的启停、设定压力、设定频率这3个参数
+							else if (Lw_Com2RegAddr >= 10000 && Lw_Com2RegAddr < 60000)
+								F_ModeParLora = 3; // 在LoRa主动发送中，=3，转发出去，写某一台从机的设定参数
+						}
 					}
-					else if (Lw_Com2RegAddr >= 60000) // 如果地址在60000以上，就修改ZGP332本身的参数
+					else if (Lw_Com2RegAddr >= 60000) // 如果地址在60000以上，就修改ZGP331本身的参数
 					{
 						// 这是预置本机的 设定参数；
 						if (Lw_Com2RegAddr < 63000)
 						{
-							p_wTarget = AddressConvert_Com3(Lw_Com2RegAddr);
-							m = Rcv2Buffer[4];
-							*p_wTarget = (m << 8) + Rcv2Buffer[5]; // 修改参数
-						}
-						else if (Lw_Com2RegAddr >= 63000 && Lw_Com2RegAddr < 64000)
-						{
-							p_wTarget_u8 = GprsPar; // GprsPar区按字节进行写
-							p_wTarget_u8 += Lw_Com2RegAddr - 63000;
-							*p_wTarget_u8 = Rcv2Buffer[5]; // 修改参数
-						}
+							if (Lw_Com2RegAddr == 0xF24E) // 0xF24E→62030
+							{
+								// 存储 url 到 flash
+								p_wTarget_char = ota_url;
 
-						Txd2Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址Pw_EquipmentNo
-						Txd2Buffer[1] = Rcv2Buffer[1];		// 功能码
-						Txd2Buffer[2] = Rcv2Buffer[2];		// 　
-						Txd2Buffer[3] = Rcv2Buffer[3];		//
-						Txd2Buffer[4] = Rcv2Buffer[4];		//
-						Txd2Buffer[5] = Rcv2Buffer[5];		//
+								for (k = 0; k < Rcv2Buffer[6]; k++) // Rcv0Buffer[5]=字数
+								{
+									m_u8 = *(p_bGen + 7 + k);
+									*(p_wTarget_char + k) = m_u8;
+								}
 
-						Lw_Txd2ChkSum = CRC16(Txd2Buffer, 6);
-						Txd2Buffer[6] = Lw_Txd2ChkSum >> 8; // /256
-						Txd2Buffer[7] = Lw_Txd2ChkSum;		// 低位字节
-						Cw_Txd2Max = 8;
-						//
-						B_Com2Cmd06 = 0;
-						Cw_Txd2 = 0;
-						// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
-						B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
-					}
-				}
-
-				else if (B_Com2Cmd16) // 预置多个
-				{
-					if (Rcv2Buffer[5] <= 30) // ZCL 2022.22.27  限制数量
-					{
-						p_bGen = Rcv2Buffer;
-						j = Rcv2Buffer[2];
-						Lw_Com2RegAddr = (j << 8) + Rcv2Buffer[3];
-
-						if (Lw_Com2RegAddr >= 60000) // 如果地址在60000以上，就修改ZGP331本身的参数
-						{
-							// 这是预置本机的 设定参数；
-							if (Lw_Com2RegAddr < 63000)
+								iap_interface_set_update_url(ota_url, strlen(ota_url));
+								cStringRestore();
+								iap_interface_set_update_flage(); // 设置更新标志
+								iap_interface_reset_mcu();		  // 重启
+							}
+							else
 							{
 								p_wTarget = AddressConvert_Com3(Lw_Com2RegAddr);
 
@@ -591,51 +627,51 @@ void Com2_SlaveSend(void) // 串口2从机发送
 								{
 									m = *(p_bGen + 7 + k * 2);
 									n = *(p_bGen + 7 + k * 2 + 1);
-									*(p_wTarget + Lw_Com2RegAddr + k) = (m << 8) + n;
-								}
-							}
-							else if (Lw_Com2RegAddr >= 63000 && Lw_Com2RegAddr < 64000)
-							{
-								p_wTarget_u8 = GprsPar; // GprsPar区按字节进行写
-								p_wTarget_u8 += Lw_Com2RegAddr - 63000;
-
-								for (k = 0; k < Rcv2Buffer[5]; k++) // Rcv0Buffer[5]=字数
-								{
-									*(p_wTarget_u8 + k) = *(p_bGen + 8 + k * 2); // 修改参数
+									*(p_wTarget + k) = (m << 8) + n;
 								}
 							}
 						}
-					}
+						else if (Lw_Com2RegAddr >= 63000 && Lw_Com2RegAddr < 64000)
+						{
+							p_wTarget_u8 = GprsPar; // GprsPar区按字节进行写
+							p_wTarget_u8 += Lw_Com2RegAddr - 63000;
 
-					// -------------------------
-					// 返回数据
-					// 2015.7.11 加入判断，因为设定DSP参数时，如果原先已经有设定在运行，丢弃。
-					Txd2Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址
-					Txd2Buffer[1] = Rcv2Buffer[1];		// 功能码
-					Txd2Buffer[2] = Rcv2Buffer[2];		// 开始地址高位字节
-					Txd2Buffer[3] = Rcv2Buffer[3];		// 开始地址低位字节
-					if (Rcv2Buffer[5] <= 30)			// ZCL 2022.22.27  限制数量
-					{
-						Txd2Buffer[4] = Rcv2Buffer[4]; //
-						Txd2Buffer[5] = Rcv2Buffer[5]; //
+							for (k = 0; k < Rcv2Buffer[5]; k++) // Rcv0Buffer[5]=字数
+							{
+								*(p_wTarget_u8 + k) = *(p_bGen + 8 + k * 2); // 修改参数
+							}
+						}
 					}
-					else
-					{
-						Txd2Buffer[4] = 0xff; // 如果超了范围，就返回0xff
-						Txd2Buffer[5] = 0xff; //
-					}
-					Lw_Txd2ChkSum = CRC16((u8 *)Txd2Buffer, 6);
-					Txd2Buffer[6] = Lw_Txd2ChkSum >> 8; // /256
-					Txd2Buffer[7] = Lw_Txd2ChkSum;		// 低位字节
-					Cw_Txd2Max = 8;
-					B_Com2Cmd16 = 0;
-					B_Com2Cmd06 = 0;
-					Cw_Txd2 = 0;
-					// RS285_CON=2;
-					USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
-					USART_ITConfig(USART2, USART_IT_TC, ENABLE); // 开始发送.
-				} // 06、16预置寄存器 结束
-			}
+				}
+
+				// -------------------------
+				// 返回数据
+				// 2015.7.11 加入判断，因为设定DSP参数时，如果原先已经有设定在运行，丢弃。
+				Txd2Buffer[0] = Pw_LoRaEquipmentNo; // 设备从地址
+				Txd2Buffer[1] = Rcv2Buffer[1];		// 功能码
+				Txd2Buffer[2] = Rcv2Buffer[2];		// 开始地址高位字节
+				Txd2Buffer[3] = Rcv2Buffer[3];		// 开始地址低位字节
+				if (Rcv2Buffer[5] <= COM16_MAX_NUM) // ZCL 2022.22.27  限制数量
+				{
+					Txd2Buffer[4] = Rcv2Buffer[4]; //
+					Txd2Buffer[5] = Rcv2Buffer[5]; //
+				}
+				else
+				{
+					Txd2Buffer[4] = 0xff; // 如果超了范围，就返回0xff
+					Txd2Buffer[5] = 0xff; //
+				}
+				Lw_Txd2ChkSum = CRC16((u8 *)Txd2Buffer, 6);
+				Txd2Buffer[6] = Lw_Txd2ChkSum >> 8; // /256
+				Txd2Buffer[7] = Lw_Txd2ChkSum;		// 低位字节
+				Cw_Txd2Max = 8;
+				B_Com2Cmd16 = 0;
+				B_Com2Cmd06 = 0;
+				Cw_Txd2 = 0;
+				// RS285_CON=2;
+				USART_SendData(USART2, Txd2Buffer[Cw_Txd2++]);
+				USART_ITConfig(USART2, USART_IT_TC, ENABLE); // 开始发送.
+			} // 06、16预置寄存器 结束
 		} // 06、16预置寄存器 结束
 	}
 	else if (Pw_EquipmentType == 1 || Pw_EquipmentType == 2) // 变频电机或高压电机

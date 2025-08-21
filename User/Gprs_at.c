@@ -65,7 +65,14 @@ void At_CREG(void) // 查询GSM注册状态  返回1,5 已注册
 {
   // Com2_printf("AT+CREG?");
   Cw_Txd3Max = 0;
-  Gprs_TX_String("AT+CREG?"); // 0D,0A, +CREG: 0,1		YLS 相同命令
+  if (w_ZhouShanProtocol_bit11 == 0)
+  {
+    Gprs_TX_String("AT+CREG?"); // 0D,0A, +CREG: 0,1		YLS 相同命令
+  }
+  else
+  {
+    Gprs_TX_String("AT+CEREG?"); // 0D,0A, +CREG: 0,1		YLS 相同命令
+  }
   Gprs_TX_Byte(0x0d);
   Gprs_TX_Start();
 }
@@ -272,7 +279,14 @@ void At_CGATT(void) // GPRS附着
 {
   // Com2_printf("AT+CGATT=1");
   Cw_Txd3Max = 0;
-  Gprs_TX_String("AT+CGATT=1");
+  if (w_ZhouShanProtocol_bit11 == 0)
+  {
+    Gprs_TX_String("AT+CGATT=1");
+  }
+  else
+  {
+    Gprs_TX_String("AT+CGATT?"); // AT+CGATT=1
+  }
   Gprs_TX_Byte(0x0d);
   Gprs_TX_Start();
 }

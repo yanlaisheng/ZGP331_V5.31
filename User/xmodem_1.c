@@ -6,42 +6,6 @@
   * @date    2013.6.2
   * @brief   Xmodem协议传送文件，使用CRC校验。
 	******************************************************************************
-	1. 2013.9.4 重点说明，下面一句用寄存器方式好用，用库方式竟然不行，存在BUG
-		//库问题是明明 USART2->SR 06位TC已经为1，
-		但USART_GetFlagStatus(USART2, USART_IT_TC) 检测不到
-
-		// Loop until the end of transmission
-		//while (USART_GetFlagStatus(USART2, USART_IT_TC) == RESET);		//这句不行，存在BUG  ZCL 2013.9.4
-		while((USART2->SR&0X40)==0);	//循环发送,直到发送完毕 	//换成这句 OK    ZCL 2013.9.4
-
-	2. //Xmodem传输时需要57600较高的波特率 2013.7.3
-		退出传输时，恢复成串口正常的波特率。
-		Pw_GprsBaudRate2=w_GprsSaveBaudRate2;
-
-	3. 上电就来测试文件传输，不用按空格键！
-	  //检查空格键，如果有键按下，可以在上位机传送参数设置文件GP311.ini
-		if(1)		//ZCL 2019.3.14 测试时
-		//if( CheckSPACEInput() )
-
-	4.  ZCL 2019.4.5
-		问题：.INI GPRS配置文件超过 2048字节，导致溢出。
-		解决办法：GPRS配置文件中去掉重复的汉字：GP311 TwoLink  V133 V132 2019.3.20 新服务器+临沂.ini
-							RCV2_MAX		2048
-
-	5. ZCL 2019.4.5
-		问题：XmodemFileTransfer时，有时候不打印："Xmodem set end，set par item 69 times! OK" ?
-		解决办法：加入延时！！！ 感觉接收没有处理完，所以必须延时。延时超过50MS，测试好用！
-		w_GprsXmodemRcvLen=XmodemReceive(Rcv2Buffer,RCV2_MAX);		//ZCL 2019.4.5
-
-		Delay_MS(500);	//ZCL 2019.4.5	很重要！OK		2000,1000,500,200,50，不加延时，打印内容69项出不来！
-										//2MS不行。10,13,16,20,30MS,不行。 20MS偶尔行过
-		if(w_GprsXmodemRcvLen>0)
-		{
-			XmodemRcvDoWith();
-			w_GprsXmodemFTItem=Lw_GprsTmp_Com1;	//Xmodem文件传输 项  ZCL 2019.4.5
-			B_ForceSavPar=1;								//退出设定，保存参数 2013.6.6
-		}
-
 	*/
 
 /* Includes ------------------------------------------------------------------*/
@@ -247,7 +211,7 @@ void XmodemFileTransfer_Com1(void) // ZCL 2013.5.29 	Xmodem协议进行文件传输 （文
 }
 
 /********************************************************************************
-** 函数名称 : XmodemReceive
+** 函数名称 : XmodemReceive_Com1
 ** 功能描述 : xmodem协议接收文件
 ** 入口参数 : <checkType>[in] 接收文件的校验方式，'C':crc校验，NAK:累加和校验
 ** 出口参数 : 无

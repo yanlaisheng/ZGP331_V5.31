@@ -177,4 +177,5 @@ extern u16 Count_Save1_No8_VVVF_Comm; // 8#泵变频器通讯计数器1
 extern u16 Count_Save2_No8_VVVF_Comm; // 8#泵变频器通讯计数器2
 
 extern u8 B_Com1Con; // 串口1发送控制
-#endif               /* __GLOBALV_EXTERN_H */
+extern char ota_url[500];
+#endif /* __GLOBALV_EXTERN_H */

@@ -74,7 +74,7 @@
 extern uchar S_M35;			   // s步骤：M35流程
 extern uchar SendDataReturnNo; // 发送数据返回序号(串口过来的数据发到每个连接)
 extern void Com2_printf(char *fmt, ...);
-extern delay_ms(vu16 nCount);
+extern void delay_ms(vu16 nCount);
 extern void UART2_Output_Datas(uint8_t S_Out[], uint16_t Counter);
 extern void UART3_Output_Datas(uint8_t S_Out[], uint16_t Counter);
 
@@ -114,7 +114,7 @@ char DeviceModel[50] __attribute__((at(FLASH_APP1_ADDR + 1024 * iap_data_offset)
 
 // size:AAAAAAAAAAAAAAA: 存储固件文件大小,由编辑bin文件软件自动识别设置,用户不可修改!
 //: 后面的0.0.0 代表固件版本,用户根据自己的修改,默认最长20个字符(不包含20)(可修改宏定义 FirmwareVersionLen 增加个数)
-char iap_firmware_size[20 + FirmwareVersionLen + 1] __attribute__((at(FLASH_APP1_ADDR + 1024 * (iap_data_offset + 1)))) = "size:AAAAAAAAAAAAAAA:0.0.2";
+char iap_firmware_size[20 + FirmwareVersionLen + 1] __attribute__((at(FLASH_APP1_ADDR + 1024 * (iap_data_offset + 1)))) = "size:AAAAAAAAAAAAAAA:5.31";
 // 当前固件程序的版本号
 char *FirmwareVersion = &iap_firmware_size[21];
 
