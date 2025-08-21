@@ -842,8 +842,8 @@ uc8 GPRS_SetParReturn[16] = {
 uc8 GPRS_ZhenTou[16] = {0x7B, 0x09, 0x00, 0x10, 0x31, 0x33, 0x39, 0x31, 0x32, 0x33,
 						0x34, 0x35, 0x36, 0x37, 0x38, 0x7B};
 
-uc8 DtuProgVersion[7] = "5.33";		 // 7 DTU程序版本:70		修改完程序后，要改这2个地方 YLS 2023.12.06
-uc8 DtuProgMakeDate[8] = "20250616"; // 8 DTU程序生成日期:71		修改完程序后，要改这2个地方 YLS 2023.12.06
+uc8 DtuProgVersion[7] = "5.34";		 // 7 DTU程序版本:70		修改完程序后，要改这2个地方 YLS 2023.12.06
+uc8 DtuProgMakeDate[8] = "20250822"; // 8 DTU程序生成日期:71		修改完程序后，要改这2个地方 YLS 2023.12.06
 
 uc8 DtuHardWare[14] = "V5.3-F103-4G  "; // 14+7 DTU硬件平台版本:73
 uc8 DtuManufacture[6] = "SANLEY";		// 6 DTU生产商LOGO:74

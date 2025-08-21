@@ -160,10 +160,10 @@ void AnologIn(void)
 void Variable_Init(void) //	变量初始化
 {
 	// ZCL 2018.8.3  w_Scr 液晶屏的参数数组，ParType:4
-	w_ScrVERSION = 533; // 软件版本号 VERSION	// 2017.9.13 -3 2018.7.17
+	w_ScrVERSION = 534; // 软件版本号 VERSION	// 2017.9.13 -3 2018.7.17
 
 	w_ScrWriteYear = 2025; // 程序编写年
-	w_ScrWriteDate = 616;  // 程序编写日期
+	w_ScrWriteDate = 822;  // 程序编写日期
 
 	w_GprsSoftVer = 109;		// 软件版本号 VERSION
 	C_PowenOnDelay = 0;			// 上电延时后,进行其他判断或者动作
