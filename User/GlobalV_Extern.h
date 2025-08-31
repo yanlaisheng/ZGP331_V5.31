@@ -12,6 +12,7 @@
 #define __GLOBALV_EXTERN_H
 
 #include "sx1276-LoRa.h"
+#include "HeDaProtocol.h"
 
 // (定义变量)
 extern u8 SoftClock[];     // 辅助时钟
@@ -36,6 +37,8 @@ extern u16 Pw_ParLst[]; // 参数字列表区
 
 extern u16 w_dspParLst[];  // DSP参数字列表区 只读 2015.7.1
 extern u16 Pw_dspParLst[]; // DSP参数字列表区 设定 2015.7.1
+
+extern u16 sw_ParLst[]; // 和达用户监控数据区 YLS 2025.08.22
 
 extern u8 B_ModPar;
 extern u16 Lw_Reg;
@@ -178,4 +181,11 @@ extern u16 Count_Save2_No8_VVVF_Comm; // 8#泵变频器通讯计数器2
 
 extern u8 B_Com1Con; // 串口1发送控制
 extern char ota_url[500];
-#endif /* __GLOBALV_EXTERN_H */
+
+// 和达协议主数据包变量声明（全局变量）
+extern HeDaPacket g_HeDaPacket;
+extern uint16_t SendNo_Order;
+
+extern uchar Txd3TmpBuffer3[TXD3_MAX]; // 和达协议，发送缓冲区YLS 2025.08.31
+extern uint Cw_Txd3TmpMax3;            // 和达协议，发送长度YLS 2025.08.31
+#endif                                 /* __GLOBALV_EXTERN_H */

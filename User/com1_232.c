@@ -218,7 +218,7 @@ void Com1_RcvProcess(void)
 
 									// ZCL 2019.10.19  地址变回
 									// YW310
-									if (Lw_Reg == 9)	//表示从YW310地址9中读取的参数，写入到331内部w_ParLst[260]地址，下同
+									if (Lw_Reg == 9) // 表示从YW310地址9中读取的参数，写入到331内部w_ParLst[260]地址，下同
 										Lw_Reg = 260;
 									else if (Lw_Reg == 23)
 										Lw_Reg = 261;
@@ -245,7 +245,7 @@ void Com1_RcvProcess(void)
 										Lw_Reg = 267; // ZCL 2019.10.21
 
 									// SZM220
-									else if (Lw_Reg == 212)	//表示从220地址212中读取的参数，写入到331内部w_ParLst[268]地址，下同
+									else if (Lw_Reg == 212) // 表示从220地址212中读取的参数，写入到331内部w_ParLst[268]地址，下同
 										Lw_Reg = 268;
 									else if (Lw_Reg == 213)
 										Lw_Reg = 269;
@@ -287,7 +287,7 @@ void Com1_RcvProcess(void)
 									p_wRead += Lw_Reg;
 									B_ModYW310SZM220 = 0;
 
-									//将从220或者温度表中读取的参数写入到目标地址
+									// 将从220或者温度表中读取的参数写入到目标地址
 									for (i = 0; i < Rcv1Buffer[2] / 2; i++)
 									{
 										j = Rcv1Buffer[3 + i * 2];
@@ -1482,8 +1482,19 @@ u16 *AddressConvert_Com3(u16 L_Reg)
 
 	if (L_Reg < 10000)
 	{
+		//=0，不启用和达协议；=1，启用和达协议  YLS 2025.08.22
+		if ((w_ZhouShanProtocol & 0x000f) == 0) //
+		{
+			p = w_DNBParLst; // 读w_DNBParLst PAR区	2019.3.14
+			p += L_Reg - DNB_ADDRESS;
+		}
+		else
+		{
+			p = sw_ParLst; // 和达协议，从这个地址读取数据
+			p += L_Reg - DNB_ADDRESS;
+		}
+
 		p = w_DNBParLst; // w_DNBParLst PAR区
-		p += L_Reg - DNB_ADDRESS;
 	}
 	else if (L_Reg >= 60000 && L_Reg < 61000)
 	{

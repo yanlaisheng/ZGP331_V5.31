@@ -114,7 +114,7 @@ typedef volatile unsigned short int vu16;
 
 #define TXD2_MAX 1536 // 最大发送数量
 #define RCV2_MAX 2048 // 接收缓冲区长度 //256*8.5	数量很大，接收串口Xmodem设置参数用！ZCL 2019.3.22
-#define TXD3_MAX 512  // 最大发送数量
+#define TXD3_MAX 1024 // 最大发送数量
 #define RCV3_MAX 1536 // 接收缓冲区长度 //256*8.5	数量很大，接收GPRS网络数据用！ZCL 2019.3.14
 
 #define TXD4_MAX 200 // 最大发送数量
@@ -1861,10 +1861,10 @@ typedef volatile unsigned short int vu16;
 
 // 特殊协议 YLS 2023.11.28
 #define w_ZhouShanProtocol w_GprsParLst[49]										 // 特殊协议
-#define w_ZhouShanProtocol_bit0 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 0)) // 定义第1路通道，=0，通用协议；=1舟山协议
-#define w_ZhouShanProtocol_bit1 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 1)) // 定义第2路通道，=0，通用协议；=1舟山协议
-#define w_ZhouShanProtocol_bit2 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 2)) // 定义第3路通道，=0，通用协议；=1舟山协议
-#define w_ZhouShanProtocol_bit3 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 3)) // 定义第4路通道，=0，通用协议；=1舟山协议
+#define w_ZhouShanProtocol_bit0 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 0)) // 定义第1路通道，=0，通用协议；=1和达协议
+#define w_ZhouShanProtocol_bit1 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 1)) // 定义第2路通道，=0，通用协议；=1和达协议
+#define w_ZhouShanProtocol_bit2 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 2)) // 定义第3路通道，=0，通用协议；=1和达协议
+#define w_ZhouShanProtocol_bit3 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 3)) // 定义第4路通道，=0，通用协议；=1和达协议
 
 #define w_ZhouShanProtocol_bit4 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 4)) // 4-6位定义主动发送间隔时间
 #define w_ZhouShanProtocol_bit5 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 5)) // 000:20分钟；001；10分钟；010:5分钟；011；2分钟
@@ -1880,6 +1880,9 @@ typedef volatile unsigned short int vu16;
 #define w_ZhouShanProtocol_bit13 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 13)) // 保留
 #define w_ZhouShanProtocol_bit14 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 14)) // 保留
 #define w_ZhouShanProtocol_bit15 MEM_ADDR(BITBAND((u32) & w_ZhouShanProtocol, 15)) // 保留
+
+#define PROTOCOL_CHANNEL_MASK 0x000F
+#define DELAYTIME_MASK 0x0070
 
 // 定义观看参数
 #define w_GprsSaveBaudRate3 w_GprsParLst[50]	 //.0 保存串口3波特率
@@ -2116,8 +2119,8 @@ typedef volatile unsigned short int vu16;
 // ZCL 2022.6.1 220的LORA远传给主机的。 备注：ZCL 2022.9.13  通过485采集的子机的电能数据，送到这个区就可以
 //  电能表1直接是本机的填充到这里。 电能表2,3,4 通讯后，填充到这里。
 // 电能表1
-#define w_Lora1PtL w_DNBParLst[0] // 合相有功功率
-#define w_Lora1PtH w_DNBParLst[1] // 合相有功功率
+#define w_Lora1PtL_YearMonth w_DNBParLst[0] // 合相有功功率  通讯数据增加时间－年月
+#define w_Lora1PtH_DayHour w_DNBParLst[1]	// 合相有功功率	通讯数据增加时间－日时
 
 #define w_Lora1SetVfFreq w_DNBParLst[2]	 // 设定的变频频率 ZCL 2023.3.20
 #define w_Lora1OutVoltage w_DNBParLst[3] // 输出电压  ZCL 2023.3.20
@@ -2169,21 +2172,23 @@ typedef volatile unsigned short int vu16;
 #define w_Lora1Flag3Unit w_DNBParLst[35]	 // 标志3单元
 #define w_Lora1Pump12Status w_DNBParLst[36]	 // 泵状态
 #define w_Lora1RemoteZDRunHz w_DNBParLst[37] // 遥控定频  ZCL 2024.1.5  大于10.0HZ才起作用
+#define w_Lora1VF_Wendu w_DNBParLst[38]		 // 变频器温度
+#define w_Lora1Time_MinSec w_DNBParLst[39]	 // 通讯数据增加时间－分秒
 
 #define F_LoRa1_Comm_Fault MEM_ADDR(BITBAND((u32) & w_Lora1Flag3Unit, 0))	  // 1#泵LORA通讯异常	0/1
 #define F_LoRa1_VVVFComm_Fault MEM_ADDR(BITBAND((u32) & w_Lora1Flag3Unit, 1)) // 1#泵变频器通讯异常	0/1
 
 // 电能表2
-#define w_Lora2PtL w_DNBParLst[0 + 40] // 合相有功功率
-#define w_Lora2PtH w_DNBParLst[1 + 40] // 合相有功功率
+#define w_Lora2PtL_YearMonth w_DNBParLst[0 + 40] // 合相有功功率  通讯数据增加时间－年月
+#define w_Lora2PtH_DayHour w_DNBParLst[1 + 40]	 // 合相有功功率	通讯数据增加时间－日时
 
-#define w_Lora2StL w_DNBParLst[2 + 40] // 合相视在功率
-#define w_Lora2StH w_DNBParLst[3 + 40] // 合相视在功率
+#define w_Lora2SetVfFreq w_DNBParLst[2 + 40]  // 设定的变频频率 ZCL 2023.3.20
+#define w_Lora2OutVoltage w_DNBParLst[3 + 40] // 输出电压  ZCL 2023.3.20
 
 #define w_Lora2EptL w_DNBParLst[4 + 40] // 合相有功电能（可配置读后清零）
 #define w_Lora2EptH w_DNBParLst[5 + 40] // 合相有功电能（可配置读后清零）
 
-#define w_Lora2YaLi w_DNBParLst[6 + 40]		   // 压力  未使用，预留
+#define w_Lora2VfErrCode w_DNBParLst[6 + 40]   // 变频器故障代码  ZCL 2023.2.10
 #define w_Lora2SoftVersion w_DNBParLst[7 + 40] // 软件版本
 #define w_Lora2XiaoLv w_DNBParLst[8 + 40]	   // 效率
 #define w_Lora2YaLi2 w_DNBParLst[9 + 40]	   // 压力2  未使用，预留
@@ -2207,8 +2212,8 @@ typedef volatile unsigned short int vu16;
 
 #define w_Lora2IaRms w_DNBParLst[20 + 40] // A相电流有效值
 
-#define w_Lora2QtL w_DNBParLst[21 + 40] // 合相无功功率
-#define w_Lora2QtH w_DNBParLst[22 + 40] // 合相无功功率
+#define w_Lora2YeWei1 w_DNBParLst[21 + 40] // 液位1  ZCL 2023.8.8
+#define w_Lora2YeWei2 w_DNBParLst[22 + 40] // 液位2  ZCL 2023.8.8
 
 #define w_Lora2PumpRunSecond w_DNBParLst[23 + 40] //	电机累计运行时间秒
 #define w_Lora2PumpRunMinute w_DNBParLst[24 + 40] //	电机累计运行时间分钟
@@ -2217,15 +2222,18 @@ typedef volatile unsigned short int vu16;
 
 #define w_Lora2VvvfFreq w_DNBParLst[27 + 40] // 变频器频率  ZCL 2022.8.19
 
-#define w_Lora2InP w_DNBParLst[28 + 40]			 // 进水压力
-#define w_Lora2OutP w_DNBParLst[29 + 40]		 // 出水压力
-#define w_Lora2WenDu1 w_DNBParLst[30 + 40]		 // 温度1
-#define w_Lora2WenDu2 w_DNBParLst[31 + 40]		 // 温度2
-#define w_Lora2SetP w_DNBParLst[32 + 40]		 // 设定压力
-#define w_Lora2Flag1Unit w_DNBParLst[33 + 40]	 // 标志1单元  设备状态
-#define w_Lora2Flag2Unit w_DNBParLst[34 + 40]	 // 标志2单元
-#define w_Lora2Flag3Unit w_DNBParLst[35 + 40]	 // 标志3单元
-#define w_Lora2Pump12Status w_DNBParLst[36 + 40] // 泵状态
+#define w_Lora2InP w_DNBParLst[28 + 40]			  // 进水压力
+#define w_Lora2OutP w_DNBParLst[29 + 40]		  // 出水压力
+#define w_Lora2WenDu1 w_DNBParLst[30 + 40]		  // 温度1
+#define w_Lora2WenDu2 w_DNBParLst[31 + 40]		  // 温度2
+#define w_Lora2SetP w_DNBParLst[32 + 40]		  // 设定压力
+#define w_Lora2Flag1Unit w_DNBParLst[33 + 40]	  // 标志1单元  设备状态
+#define w_Lora2Flag2Unit w_DNBParLst[34 + 40]	  // 标志2单元
+#define w_Lora2Flag3Unit w_DNBParLst[35 + 40]	  // 标志3单元
+#define w_Lora2Pump12Status w_DNBParLst[36 + 40]  // 泵状态
+#define w_Lora2RemoteZDRunHz w_DNBParLst[37 + 40] // 遥控定频  ZCL 2024.1.5  大于10.0HZ才起作用
+#define w_Lora2VF_Wendu w_DNBParLst[38 + 40]	  // 变频器温度
+#define w_Lora2Time_MinSec w_DNBParLst[39 + 40]	  // 通讯数据增加时间－分秒
 
 #define F_LoRa2_Comm_Fault MEM_ADDR(BITBAND((u32) & w_Lora2Flag3Unit, 0))	  // 2#泵LORA通讯异常	0/1
 #define F_LoRa2_VVVFComm_Fault MEM_ADDR(BITBAND((u32) & w_Lora2Flag3Unit, 1)) // 2#泵变频器通讯异常	0/1
@@ -2523,4 +2531,139 @@ typedef volatile unsigned short int vu16;
 #define Pw_LastPacketIdleTime Pw_ParLst_GPRS[42] // 最后包空闲时间间隔
 #define Pw_SupportDataReceipt Pw_ParLst_GPRS[43] //=1，支持数据显示；=0，不显示
 
+//----------和达协议发送数据区---------------
+#define sw_StartFlag sw_ParLst[0] // 帧头 0xF8 8F
+#define sw_DeviceID1 sw_ParLst[1] // 设备ID 4个字 BCD码
+#define sw_DeviceID2 sw_ParLst[2]
+#define sw_DeviceID3 sw_ParLst[3]
+#define sw_DeviceID4 sw_ParLst[4]
+
+#define sw_CompanyCode1 sw_ParLst[5]	// 公司代码 1个字 0x1001
+#define sw_ProtocolVersion sw_ParLst[6] // 协议版本 1个字 0x0001
+#define sw_DataTime_YY sw_ParLst[7]		// 数据冻结（上报）时间 年 6个字 BCD码
+#define sw_DataTime_MM sw_ParLst[8]		// 月
+#define sw_DataTime_DD sw_ParLst[9]		// 日
+#define sw_DataTime_HH sw_ParLst[10]	// 时
+#define sw_DataTime_mm sw_ParLst[11]	// 分
+#define sw_DataTime_SS sw_ParLst[12]	// 秒
+#define sw_CmdType sw_ParLst[13]		// 命令类型 1个字 数据上报功能码为02
+#define sw_SendOrder1 sw_ParLst[14]		// 发送流水序号 2个字 每次发送数据时加1，溢出后清零
+#define sw_SendOrder2 sw_ParLst[15]
+#define sw_EncryptionMethod sw_ParLst[16] // 加密方式 1个字，=0不加密
+#define sw_Keyversion1 sw_ParLst[17]	  // 秘钥版本号 2个字
+#define sw_Keyversion2 sw_ParLst[18]
+#define sw_CompressionMethod sw_ParLst[19] // 压缩方式 1个字 =0不压缩
+#define sw_ReserveData1 sw_ParLst[20]	   // 保留字段 2个字
+#define sw_ReserveData2 sw_ParLst[21]	   //
+#define sw_DataDomain_Len1 sw_ParLst[22]   // 数据域长度 2个字
+#define sw_DataDomain_Len1 sw_ParLst[22]
+
+#define sw_P_Set sw_ParLst[2]	  // 设定压力
+#define sw_RunStop sw_ParLst[313] // 启停
+// 远程监控集中查询常用参数 32个
+#define sw_ProcessNo sw_ParLst[339] // 过程序号
+// 远程监控集中查询常用参数 31个字
+//----------以下32个字---------------------
+#define sw_Pump12Status sw_ParLst[340] // 泵12状态
+#define sw_Pump34Status sw_ParLst[341] // 泵34状态
+#define sw_Pump56Status sw_ParLst[342] // 泵56状态 预留
+#define sw_Flag1Unit sw_ParLst[343]	   // 标志1单元
+#define sw_Flag2Unit sw_ParLst[344]	   // 标志2单元
+#define sw_Flag3Unit sw_ParLst[345]	   // 标志3单元
+#define sw_YuLvValue sw_ParLst[346]	   // 余氯2023.01.03
+
+#define sw_PIDCalcP sw_ParLst[347]	   // PID运算压力
+#define sw_VvvfFreq1 sw_ParLst[348]	   // 变频器频率
+#define sw_InPDec sw_ParLst[349]	   // 进水口压力
+#define sw_OutPDec sw_ParLst[350]	   // 出水口压力
+#define sw_InstanFlux sw_ParLst[351]   // 瞬时流量		//ZCL 2007.6.15
+#define sw_Pump1Current sw_ParLst[352] // 1号泵电流
+#define sw_Pump2Current sw_ParLst[353] // 2号泵电流
+#define sw_Pump3Current sw_ParLst[354] // 3号泵电流
+#define sw_Pump4Current sw_ParLst[355] // 4号泵电流
+#define sw_ZhuoDuValue sw_ParLst[356]  // 浊度2023.01.03
+#define sw_YeWeiDeep sw_ParLst[357]	   // 液位深度
+#define sw_SysVoltage sw_ParLst[358]   // 系统电压		//ZCL 2007.6.15
+#define sw_SumFluxL sw_ParLst[359]	   // 累计流量低字
+#define sw_SumFluxH sw_ParLst[360]	   // 累计流量高字
+#define sw_DDBSumFluxL sw_ParLst[361]  // 累计电量低字
+#define sw_DDBSumFluxH sw_ParLst[362]  // 累计电量高字
+#define sw_TempValue sw_ParLst[363]	   // 水温
+// #define	sw_YuLvValue				sw_ParLst[364]	//
+// #define	sw_WenDuValue			sw_ParLst[365]	//
+// #define	sw_PHValue				sw_ParLst[366]	// PH值
+#define sw_OutDoorAlarm sw_ParLst[364]	// 有人出去
+#define sw_OpenDoorAlarm sw_ParLst[365] // 门被打开
+#define sw_InDoorAlarm sw_ParLst[366]	// 有人进入
+
+#define sw_PHValue sw_ParLst[367] // PH 2023.01.03
+// #define sw_NowYM sw_ParLst[368]	  // 年月
+// #define sw_NowDH sw_ParLst[369]	  // 日时
+// #define sw_NowMS sw_ParLst[370]	  // 分秒
+#define sw_VvvfFreq2 sw_ParLst[368] // 2号泵频率
+#define sw_VvvfFreq3 sw_ParLst[369] // 3号泵频率
+#define sw_VvvfFreq4 sw_ParLst[370] // 4号泵频率
+//----------以上32个字---------------------
+
+//----------下面8个字扩展---------------------
+#define sw_DNBData1 sw_ParLst[371] // 个位和十位数
+#define sw_DNBData2 sw_ParLst[372] // 	 百位和千位数
+#define sw_DNBData3 sw_ParLst[373] // 	万位和十万位
+#define sw_DNBData4 sw_ParLst[374] // 	小数点后的两位
+
+// #define sw_VvvfFreq1 sw_ParLst[375]
+// #define sw_VvvfFreq2 sw_ParLst[376]
+// #define sw_VvvfFreq3 sw_ParLst[377] //
+// #define sw_VvvfFreq4 sw_ParLst[378]
+
+#define sw_Flag1Unit_bit0 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 0))
+#define sw_Flag1Unit_bit1 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 1))
+#define sw_Flag1Unit_bit2 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 2))
+#define sw_Flag1Unit_bit3 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 3))
+#define sw_Flag1Unit_bit4 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 4))
+#define sw_Flag1Unit_bit5 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 5))
+#define sw_Flag1Unit_bit6 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 6))
+#define sw_Flag1Unit_bit7 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 7))
+#define sw_Flag1Unit_bit8 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 8))
+#define sw_Flag1Unit_bit9 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 9))
+#define sw_Flag1Unit_bit10 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 10))
+#define sw_Flag1Unit_bit11 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 11))
+#define sw_Flag1Unit_bit12 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 12))
+#define sw_Flag1Unit_bit13 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 13))
+#define sw_Flag1Unit_bit14 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 14))
+#define sw_Flag1Unit_bit15 MEM_ADDR(BITBAND((u32) & sw_Flag1Unit, 15))
+
+#define sw_Flag2Unit_bit0 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 0))
+#define sw_Flag2Unit_bit1 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 1))
+#define sw_Flag2Unit_bit2 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 2))
+#define sw_Flag2Unit_bit3 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 3))
+#define sw_Flag2Unit_bit4 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 4))
+#define sw_Flag2Unit_bit5 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 5))
+#define sw_Flag2Unit_bit6 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 6))
+#define sw_Flag2Unit_bit7 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 7))
+#define sw_Flag2Unit_bit8 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 8))
+#define sw_Flag2Unit_bit9 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 9))
+#define sw_Flag2Unit_bit10 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 10))
+#define sw_Flag2Unit_bit11 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 11))
+#define sw_Flag2Unit_bit12 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 12))
+#define sw_Flag2Unit_bit13 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 13))
+#define sw_Flag2Unit_bit14 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 14))
+#define sw_Flag2Unit_bit15 MEM_ADDR(BITBAND((u32) & sw_Flag2Unit, 15))
+
+#define sw_Flag3Unit_bit0 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 0))
+#define sw_Flag3Unit_bit1 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 1))
+#define sw_Flag3Unit_bit2 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 2))
+#define sw_Flag3Unit_bit3 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 3))
+#define sw_Flag3Unit_bit4 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 4))
+#define sw_Flag3Unit_bit5 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 5))
+#define sw_Flag3Unit_bit6 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 6))
+#define sw_Flag3Unit_bit7 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 7))
+#define sw_Flag3Unit_bit8 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 8))
+#define sw_Flag3Unit_bit9 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 9))
+#define sw_Flag3Unit_bit10 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 10))
+#define sw_Flag3Unit_bit11 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 11))
+#define sw_Flag3Unit_bit12 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 12))
+#define sw_Flag3Unit_bit13 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 13))
+#define sw_Flag3Unit_bit14 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 14))
+#define sw_Flag3Unit_bit15 MEM_ADDR(BITBAND((u32) & sw_Flag3Unit, 15))
 #endif /* __GLOBALCONST_H */

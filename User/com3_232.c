@@ -877,7 +877,11 @@ uchar Txd3Buffer[TXD3_MAX];		 // 发送缓冲区
 char Rcv3Buffer[RCV3_MAX];		 // 接收缓冲区
 char Rcv3_Back_Buffer[RCV3_MAX]; // 接收缓冲区
 uchar Txd3TmpBuffer[TXD3_MAX];	 // ZCL 2019.3.14
+uchar Txd3TmpBuffer2[TXD3_MAX];	 // YLS 2025.08.22
+uchar Txd3TmpBuffer3[TXD3_MAX];	 // 和达协议，发送缓冲区YLS 2025.08.31
 uint Cw_Txd3TmpMax;				 // ZCL 2019.3.14
+uint Cw_Txd3TmpMax2;			 // YLS 2025.08.22
+uint Cw_Txd3TmpMax3;			 // 和达协议，发送长度YLS 2025.08.31
 
 uint Cw_Rcv3;		 // 接收计数器//
 uint Cw_Txd3;		 // 发送计数器//
@@ -908,6 +912,8 @@ uchar AT_CallReadyOk_Flag; // 收到Call Ready标志
 uint C_M35PowerOnOff;	   // M35上电断电计数器
 uint C_M35SendSum;		   // M35流程每步的发送数量
 uchar ChannelNo;		   // 应答通道,改成数值
+uchar RcvData_Procotol;	   // 收到数据类型，=0，通用协议；=1，舟山协议	YLS 2023.09.11
+uchar ReturnChannel[4];	   // 返回数据通道 YLS 2023.09.11
 uchar B_Com3Cmd8B;		   // 查询DTU参数命令 2012.8.17
 uchar B_Com3Cmd8D;		   // 设置DTU参数命令 2012.8.24
 uchar B_Com3Cmd89;		   // 服务器发送数据指令 2011.8.24
@@ -1012,6 +1018,12 @@ u8 p1_TmpBuf[100] = {0};	  // 缓存2
 u8 p_TmpBuf[512] = {0};		  // 缓存1
 u8 *p_Txd1Buffer;
 u8 domain_name[31] = {0};
+
+u8 T_Com3Send;
+u16 C_Com3Send;
+u8 S_Com3Send;
+u16 sw_Com3SendDelay;
+
 /* Private variables extern --------------------------------------------------*/
 
 extern uchar Txd2Buffer[];
@@ -1063,6 +1075,10 @@ void Com1_sendData(uint8_t txd_buffer[], uint16_t send_num);
 void UART1_Output_Datas(uint8_t S_Out[], uint8_t Counter);
 void UART2_Output_Datas(uint8_t S_Out[], uint8_t Counter);
 void Send_DomainName(void);
+void Gprs_TX_Fill_Data(void);
+void At_Gprs_Tx_Fill_Cmd(u8 tmp);
+void Gprs_ReturnData(void);
+void Gprs_MasterReturnData(void);
 void Fill_Dtu_Par(void);
 
 // static uint16_t tim_cnt = 0;                         // 定时器计数
@@ -1626,13 +1642,27 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 											Txd3TmpBuffer[1] = Txd2Buffer[1];	   // 功能码			ZCL 2019.3.12 这里比较特殊，用的Txd2Buffer
 											Txd3TmpBuffer[2] = Txd2Buffer[5] * 2;  // Rcv2Buffer[5]=字数 　
 
+											Txd3TmpBuffer2[0] = Pw_LoRaEquipmentNo; // 设备从地址Pw_EquipmentNo
+											Txd3TmpBuffer2[1] = Txd2Buffer[1];		// 功能码			ZCL 2019.3.12 这里比较特殊，用的Txd2Buffer
+											Txd3TmpBuffer2[2] = Txd2Buffer[5] * 2;	// Rcv2Buffer[5]=字数
+
 											if (Txd2Buffer[5] > 125)
 												Txd2Buffer[5] = 125; // ZCL 2019.4.26 限制大小，防止数组溢出
 
 											if (Lw_Com3RegAddr < 63000)
 											{
 												p_wRead = AddressConvert_Com3(Lw_Com3RegAddr);
-												p_bMove = Txd3TmpBuffer;
+
+												//=0，不启用和达协议；=1，启用和达协议  YLS 2025.08.22
+												if (RcvData_Procotol == 0) //
+												{
+													p_bMove = Txd3TmpBuffer;
+												}
+												else
+												{
+													p_bMove = Txd3TmpBuffer3; // 和达协议 2025.08.31
+												}
+
 												for (k = 0; k < Txd2Buffer[5]; k++) // 填充查询内容
 												{
 													m = *(p_wRead + k); // 2023.12.16 YLS
@@ -1657,6 +1687,13 @@ void Com3_RcvProcess(void) // 接收处理程序 校验程序
 											Txd3TmpBuffer[Txd3TmpBuffer[2] + 3] = Lw_Txd3ChkSum >> 8; // /256
 											Txd3TmpBuffer[Txd3TmpBuffer[2] + 4] = Lw_Txd3ChkSum;	  // 低位字节
 											Cw_Txd3TmpMax = Txd3TmpBuffer[2] + 5;
+
+											//---------------和达协议填充，YLS 2025.08.22 ----------------
+											Lw_Txd3ChkSum = CRC16(Txd3TmpBuffer2, Txd3TmpBuffer2[2] + 3);
+											Txd3TmpBuffer2[Txd3TmpBuffer2[2] + 3] = Lw_Txd3ChkSum >> 8; // /256
+											Txd3TmpBuffer2[Txd3TmpBuffer2[2] + 4] = Lw_Txd3ChkSum;		// 低位字节
+											Cw_Txd3TmpMax2 = Txd3TmpBuffer2[2] + 5;
+
 											//
 											B_Com3Cmd03 = 0;
 											Cw_Txd3 = 0;
@@ -2584,13 +2621,62 @@ void Com3_SlaveSend(void) // 串口3从机发送
 	// else if  4.可以继续添加别的处理
 }
 
-void Com3_MasterSend(void) // 串口1主机发送
+void Com3_MasterSend(void) // 串口3主动发送
 {
-	/* 	if(S_SendLink+S_DtuInquireSend+S_DtuSetSend+S_GprsDataSend
-				+S_HeartSend+S_SendSms+S_ReadNewSms+S_SmsFull ==0 )
+	u16 tmp_time;
+	if (S_SendLink + S_DtuInquireSend + S_DtuSetSend + B_GprsDataReturn + S_HeartSend + S_SendSms + S_ReadNewSms + S_SmsFull == 0) // S_GprsDataSend
+	{
+		tmp_time = (w_ZhouShanProtocol & DELAYTIME_MASK) >> 4;
+		switch (tmp_time)
 		{
+		case 0:
+			sw_Com3SendDelay = 20 * 60;
+			break;
+		case 1:
+			sw_Com3SendDelay = 10 * 60;
+			break;
+		case 2:
+			sw_Com3SendDelay = 5 * 60; // 默认5分钟
+			break;
+		case 3:
+			sw_Com3SendDelay = 2 * 60;
+			break;
+		case 4:
+			sw_Com3SendDelay = 60;
+			break;
+		case 5:
+			sw_Com3SendDelay = 30;
+			break;
+		case 6:
+			sw_Com3SendDelay = 20;
+			break;
+		case 7:
+			sw_Com3SendDelay = 10;
+			break;
 
-		} */
+		default:
+			sw_Com3SendDelay = 5 * 60;
+			break;
+		}
+
+		if (T_Com3Send != SClkSecond)
+		{
+			T_Com3Send = SClkSecond; //
+			C_Com3Send++;
+
+			if (C_Com3Send > sw_Com3SendDelay) //
+			{
+				C_Com3Send = 0;
+				S_Com3Send = 1;
+			}
+		}
+	}
+
+	if (S_Com3Send == 1)
+	{
+		//			S_Com3Send = 0;
+		Gprs_MasterReturnData(); // YLS 2023.09.10
+	}
 }
 
 /*2012.7.10  周成磊 GPRS编程 */
@@ -4757,6 +4843,7 @@ void Com3_ReceiveData(void)
 	u8 ipbuf[15];			   // IP缓存
 	u8 portBuf[5] = {0};	   // 远端端口缓存
 	u8 p_RECV_IPBuf[40] = {0}; // 接收缓存
+	u16 temp1;
 
 	Fill_data();
 
@@ -5010,6 +5097,75 @@ void Com3_ReceiveData(void)
 				F_AcklinkNum = 4;
 			}
 		}
+	}
+
+	// 判断从某个通道中收到的查询命令属于通用协议，还是舟山特殊协议 YLS 2023.09.11
+	// 返回数据时，只返回对应协议的通道，如从通用协议通道查询的，则只返回给通用协议通道；如从舟山协议通道查询的，则只返回给舟山协议通道
+	temp1 = w_ZhouShanProtocol & PROTOCOL_CHANNEL_MASK;
+	RcvData_Procotol = 0; // 通用协议
+	if ((ChannelNo == 0 && (temp1 & 0x01) == 0x01) || (ChannelNo == 1 && (temp1 & 0x02) == 0x02) || (ChannelNo == 2 && (temp1 & 0x04) == 0x04) || (ChannelNo == 3 && (temp1 & 0x08) == 0x08))
+	{
+		RcvData_Procotol = 1; // 舟山协议
+	}
+
+	if (RcvData_Procotol == 0)
+	{
+		if ((temp1 & 0x01) == 0x00)
+			ReturnChannel[0] = 1;
+		else
+			ReturnChannel[0] = 0;
+	}
+	else
+	{
+		if ((temp1 & 0x01) == 0x00)
+			ReturnChannel[0] = 0;
+		else
+			ReturnChannel[0] = 1;
+	}
+
+	if (RcvData_Procotol == 0)
+	{
+		if ((temp1 & 0x02) == 0x00)
+			ReturnChannel[1] = 1;
+		else
+			ReturnChannel[1] = 0;
+	}
+	else
+	{
+		if ((temp1 & 0x02) == 0x00)
+			ReturnChannel[1] = 0;
+		else
+			ReturnChannel[1] = 1;
+	}
+
+	if (RcvData_Procotol == 0)
+	{
+		if ((temp1 & 0x04) == 0x00)
+			ReturnChannel[2] = 1;
+		else
+			ReturnChannel[2] = 0;
+	}
+	else
+	{
+		if ((temp1 & 0x04) == 0x00)
+			ReturnChannel[2] = 0;
+		else
+			ReturnChannel[2] = 1;
+	}
+
+	if (RcvData_Procotol == 0)
+	{
+		if ((temp1 & 0x08) == 0x00)
+			ReturnChannel[3] = 1;
+		else
+			ReturnChannel[3] = 0;
+	}
+	else
+	{
+		if ((temp1 & 0x08) == 0x00)
+			ReturnChannel[3] = 0;
+		else
+			ReturnChannel[3] = 1;
 	}
 }
 
@@ -5605,4 +5761,539 @@ unsigned int my_atoi(unsigned char *s, unsigned char sz)
 	else // 否则返回为空
 		return NULL;
 }
+
+// 根据通道协议选择，填充对应数据
+void Gprs_TX_Fill_Data(void)
+{
+	u16 temp1;
+	temp1 = w_ZhouShanProtocol & PROTOCOL_CHANNEL_MASK;
+
+	if (temp1 == 0)
+	{
+		Gprs_TX_Fill(Txd3TmpBuffer, Cw_Txd3TmpMax); // 填充数据 ZCL 2019.3.12
+	}
+	else
+	{
+		if (SendDataReturnNo == 0) // 第1路通道
+		{
+			if (w_ZhouShanProtocol_bit0 == 0)
+				Gprs_TX_Fill(Txd3TmpBuffer, Cw_Txd3TmpMax); // 填充数据 ZCL 2019.3.12
+			else
+				Gprs_TX_Fill(Txd3TmpBuffer2, Cw_Txd3TmpMax2); // 填充数据 ZCL 2019.3.12
+		}
+		else if (SendDataReturnNo == 1) // 第2路通道
+		{
+			if (w_ZhouShanProtocol_bit1 == 0)
+				Gprs_TX_Fill(Txd3TmpBuffer, Cw_Txd3TmpMax); // 填充数据 ZCL 2019.3.12
+			else
+				Gprs_TX_Fill(Txd3TmpBuffer2, Cw_Txd3TmpMax2); // 填充数据 ZCL 2019.3.12
+		}
+		else if (SendDataReturnNo == 2) // 第3路通道
+		{
+			if (w_ZhouShanProtocol_bit2 == 0)
+				Gprs_TX_Fill(Txd3TmpBuffer, Cw_Txd3TmpMax); // 填充数据 ZCL 2019.3.12
+			else
+				Gprs_TX_Fill(Txd3TmpBuffer2, Cw_Txd3TmpMax2); // 填充数据 ZCL 2019.3.12
+		}
+		else if (SendDataReturnNo == 3) // 第4路通道
+		{
+			if (w_ZhouShanProtocol_bit3 == 0)
+				Gprs_TX_Fill(Txd3TmpBuffer, Cw_Txd3TmpMax); // 填充数据 ZCL 2019.3.12
+			else
+				Gprs_TX_Fill(Txd3TmpBuffer2, Cw_Txd3TmpMax2); // 填充数据 ZCL 2019.3.12
+		}
+	}
+}
+
+// 根据通道协议选择，填充对应命令
+void At_Gprs_Tx_Fill_Cmd(u8 tmp)
+{
+	u16 temp1;
+	temp1 = w_ZhouShanProtocol & PROTOCOL_CHANNEL_MASK;
+
+	if (temp1 == 0)
+	{
+		At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax); // DDP协议	Cw_BakRcv2
+	}
+	else
+	{
+		if (SendDataReturnNo == 0) // 第1路通道
+		{
+			if (w_ZhouShanProtocol_bit0 == 0)
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax);  // DDP协议	Cw_BakRcv2
+			else																  // 其他3路通道返回舟山协议数据
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax3); // DDP协议	Cw_BakRcv2
+		}
+		if (SendDataReturnNo == 1) // 第2路通道
+		{
+			if (w_ZhouShanProtocol_bit1 == 0)
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax);  // DDP协议	Cw_BakRcv2
+			else																  // 其他3路通道返回舟山协议数据
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax3); // DDP协议	Cw_BakRcv2
+		}
+		if (SendDataReturnNo == 2) // 第3路通道
+		{
+			if (w_ZhouShanProtocol_bit2 == 0)
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax);  // DDP协议	Cw_BakRcv2
+			else																  // 其他3路通道返回舟山协议数据
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax3); // DDP协议	Cw_BakRcv2
+		}
+		if (SendDataReturnNo == 3) // 第4路通道
+		{
+			if (w_ZhouShanProtocol_bit3 == 0)
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax);  // DDP协议	Cw_BakRcv2
+			else																  // 其他3路通道返回舟山协议数据
+				At_QISENDAccordingLength(SendDataReturnNo, tmp + Cw_Txd3TmpMax3); // DDP协议	Cw_BakRcv2
+		}
+	}
+}
+
+// GPRS返回数据，4路通道
+void Gprs_ReturnData(void)
+{
+	u8 t;
+	u16 data_len;
+
+	// 序号超过最大连接，延时5MS后，清除B_GprsDataReturn
+	if (SendDataReturnNo > 3)
+	{
+		if (C_BetweenSendDataReturn > 5) // Ms
+		{
+			SendDataReturnNo = 0;
+			B_GprsDataReturn = 0;
+			C_GprsDataSend = 0;
+			S_GprsDataSend = 0;
+			/* Enable USART2 Receive interrupts */ // 2014.11.27 转发完，再开中断
+			USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+			USART2->CR1 |= 0x0004; //.3位  运行接收
+		}
+	}
+
+	// 有连接标志的链路，转发数据
+	// ZCL 2019.4.9 改成注册成功的返回
+	else if (CGD0_LinkConnectOK[SendDataReturnNo] && (ReturnChannel[SendDataReturnNo] == 1))
+	// else if (ZhuCeOkFLAG[SendDataReturnNo])
+	{
+		// 1. AT发送指令		先发指令.通道号.长度
+		if (S_GprsDataSend == 0 && Cw_Txd3Max == 0)
+		{
+			S_GprsDataSend = 1;
+			C_GprsDataSend = 0;
+			C_BetweenSendDataReturn = 0;
+		}
+
+		else if (S_GprsDataSend == 1 && Cw_Txd3Max == 0 && C_BetweenSendDataReturn > 3)
+		{
+			S_GprsDataSend = 2;
+			C_BetweenSendDataReturn = 0;
+			// 2012.10.4 加入DDP协议和透明协议的选择
+			// Cw_Txd3Max=0;		//判断条件中有Cw_Txd3Max==0，所以此句注释掉
+
+			// ZCL 2019.3.14 Cw_BakRcv2 换成 Cw_Txd3TmpMax
+			if (GprsPar[EnDDP0Base + SendDataReturnNo]) //=1，DDP协议；=0，透明协议
+			{
+				// 根据不同的通道号，返回不同的数据
+				// 先发送命令
+				At_Gprs_Tx_Fill_Cmd(16); // YLS 2023.09.09
+			}
+			else
+			{
+				// 先发送命令
+				At_Gprs_Tx_Fill_Cmd(0); // YLS 2023.09.09
+			}
+		}
+
+		// 2014.12.11 	因为遇到收不到AT_3EOk_Flag标志，所以加上延时后，重发数据
+		else if (S_GprsDataSend == 2 && C_BetweenSendDataReturn > 300)
+		{
+			S_GprsDataSend = 1; // ZCL1
+			C_BetweenSendDataReturn = 0;
+		}
+
+		// 2.数据发送
+		else if (S_GprsDataSend == 2 && AT_3EOk_Flag) //
+		{
+			S_GprsDataSend = 3;
+			AT_3EOk_Flag = 0;
+			Cw_Txd3Max = 0; // 2014.12.8
+			// 2012.10.4 加入DDP协议和透明协议的选择
+			//=1，DDP协议
+			if (GprsPar[EnDDP0Base + SendDataReturnNo]) //=1，DDP协议；=0，透明协议
+			{
+				Gprs_TX_Fill(GPRS_ZhenTou, 16); // DDP协议
+				// 修改DTU身份识别码
+				for (t = 0; t < 11; t++)
+					Txd3Buffer[4 + t] = GprsPar[DtuNoBase + t];
+
+				// 2012.10.10 加入TCP协议和UDP协议的区别
+				// UDP: 7B 09 00 10 31 33 39 31 32 33 34 35 36 37 38 7B 61 62 63
+				// TCP: 7B 09 00 13 31 33 39 31 32 33 34 35 36 37 38 61 62 63 7B
+
+				// TCP
+				if (GprsPar[LinkTCPUDP0Base + SendDataReturnNo]) //=1，TCP协议；=0，UDP协议
+				{
+					Cw_Txd3Max = 15; // 修改Cw_Txd3Max值从16改成15！ 2012.10.10
+
+					// ZCL 2019.3.12 加限制，透传是原先程序；新主机GPRS模式是新程序，填充数据不一样。
+					if (F_GprsTransToCom)
+					{
+						Gprs_TX_Fill(Rcv2Buffer, Cw_BakRcv2); // 填充数据
+						Gprs_TX_Byte(0x7B);
+						// 2012.10.10 修改发送长度（使用TCP协议，则长度为所有发送数据总长度！ 周成磊）
+						Txd3Buffer[3] = 16 + Cw_BakRcv2;
+					}
+
+					// ZCL 2019.3.12
+					else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
+					{
+						// 根据不同的通道号，返回不同的数据
+						Gprs_TX_Fill_Data(); // YLS 2023.09.09
+
+						Gprs_TX_Byte(0x7B);
+						// 2012.10.10 修改发送长度（使用TCP协议，则长度为所有发送数据总长度！ 周成磊）
+
+						data_len = 16 + Cw_Txd3TmpMax;
+						Txd3Buffer[2] = data_len >> 8;
+						Txd3Buffer[3] = data_len; // YLS 2023.10.13 解决一个BUG，原来只取了低字节，导致TCP模式下，不能查询(255-21)=234字节，也就是不能查询超过117个字
+					}
+				}
+
+				// UDP时
+				else
+				{
+					// Gprs_TX_Fill(Rcv2Buffer,Cw_BakRcv2);		//填充数据
+					// ZCL 2019.3.12 加限制，透传是原先程序；新主机GPRS模式是新程序，填充数据不一样。
+					if (F_GprsTransToCom)
+						Gprs_TX_Fill(Rcv2Buffer, Cw_BakRcv2); // 填充数据
+
+					else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
+					{
+						// 根据不同的通道号，返回不同的数据
+						Gprs_TX_Fill_Data(); // YLS 2023.09.09
+					}
+				}
+			}
+			//=0，透明协议
+			else // 透明协议不用加头，也不分TCP,UDP区别
+			{
+				// Gprs_TX_Fill(Rcv2Buffer,Cw_BakRcv2);		//不分TCP,UDP区别
+
+				// ZCL 2019.3.12 加限制，透传是原先程序；新主机GPRS模式是新程序，填充数据不一样。
+				if (F_GprsTransToCom)
+					Gprs_TX_Fill(Rcv2Buffer, Cw_BakRcv2); // 填充数据
+
+				else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
+				{
+					// 根据不同的通道号，返回不同的数据
+					Gprs_TX_Fill_Data(); // YLS 2023.09.09
+				}
+			}
+
+			// 2.数据发送
+			Gprs_TX_Start();
+			// if (GprsPar[ConsoleInfoTypeBase])
+			// 	u1_printf("SEND DATA:%s", Txd3Buffer);
+			//
+			C_BetweenSendDataReturn = 0;
+		}
+		// 2014.12.11 	因为遇到收不到AT_ComOk_Flag标志，所以加上延时后，重发数据
+		else if (S_GprsDataSend == 3 && C_BetweenSendDataReturn > 1000)
+		{
+			S_GprsDataSend = 1; // ZCL2
+			C_BetweenSendDataReturn = 0;
+		}
+		// 3. 收到正确OK标志，发送结束
+		else if (S_GprsDataSend == 3 && AT_CIPSEND_Flag && C_BetweenSendDataReturn > 100) // 发送完必须加延时，很重要 YLS 2023.03.07
+		{
+			//				AT_ComOk_Flag = 0;
+			AT_CIPSEND_Flag = 0;
+			//
+			S_GprsDataSend = 0;
+			C_GprsDataSend = 0;
+			// SendDataReturnNo++;				//指向下一个发送序号	 移到后面 2014.11.27
+			// 清除不用发送心跳包标志
+			C_HeartDelay[SendDataReturnNo] = 0;
+			B_HeartSendAsk[SendDataReturnNo] = 0;
+			// 移到这里 2014.11.27
+			SendDataReturnNo++; // 指向下一个发送序号
+			C_BetweenSendDataReturn = 0;
+		}
+
+		// 4. 没有正确发送，延时
+		if (C_GprsDataSend > 1) // S	YLS 2023.03.23
+		{
+			S_GprsDataSend = 0;
+			C_GprsDataSend = 0;
+			SendDataReturnNo++; // 指向下一个发送序号
+			C_BetweenSendDataReturn = 0;
+		}
+	}
+	// 没有连接的链路，跳过，转向下一个连接
+	else
+	{
+		S_GprsDataSend = 0;
+		C_GprsDataSend = 0;
+		SendDataReturnNo++; // 指向下一个发送序号
+		C_BetweenSendDataReturn = 0;
+	}
+}
+
+// GPRS主动返回数据，4路通道
+void Gprs_MasterReturnData(void)
+{
+	u8 t;
+	//	u8 masterReturnChannel[4];
+	u16 temp1;
+	u16 *p_wRead;
+	u8 *p_bMove;
+	u16 m;
+	uint k;
+	u8 tmpReturnChannel[4] = {0, 0, 0, 0};
+
+	// 判断某一路是否是舟山协议
+	temp1 = w_ZhouShanProtocol & PROTOCOL_CHANNEL_MASK;
+
+	if ((temp1 & 0x01) == 0x01)
+		tmpReturnChannel[0] = 1;
+
+	if ((temp1 & 0x02) == 0x02)
+		tmpReturnChannel[1] = 1;
+
+	if ((temp1 & 0x04) == 0x04)
+		tmpReturnChannel[2] = 1;
+
+	if ((temp1 & 0x08) == 0x08)
+		tmpReturnChannel[3] = 1;
+
+	// 序号超过最大连接，延时5MS后，清除B_GprsDataReturn
+	if (SendDataReturnNo > 3)
+	{
+		if (C_BetweenSendDataReturn > 5) // Ms
+		{
+			SendDataReturnNo = 0;
+			B_GprsDataReturn = 0;
+			C_GprsDataSend = 0;
+			S_GprsDataSend = 0;
+			/* Enable USART2 Receive interrupts */ // 2014.11.27 转发完，再开中断
+			USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+			USART2->CR1 |= 0x0004; //.3位  运行接收
+			S_Com3Send = 0;		   // YLS 2023.09.12
+		}
+	}
+
+	// 有连接标志的链路，转发数据
+	// ZCL 2019.4.9 改成注册成功的返回
+	else if (CGD0_LinkConnectOK[SendDataReturnNo] && (tmpReturnChannel[SendDataReturnNo] == 1)) // 舟山协议的通道才会主动发送
+	// else if (ZhuCeOkFLAG[SendDataReturnNo])
+	{
+		// 1. AT发送指令		先发指令.通道号.长度
+		if (S_GprsDataSend == 0 && Cw_Txd3Max == 0)
+		{
+			S_GprsDataSend = 1;
+			C_GprsDataSend = 0;
+			C_BetweenSendDataReturn = 0;
+		}
+
+		else if (S_GprsDataSend == 1 && Cw_Txd3Max == 0 && C_BetweenSendDataReturn > 3)
+		{
+			S_GprsDataSend = 2;
+			C_BetweenSendDataReturn = 0;
+
+			//---------------YLS 2023.09.09 ----------------
+			Txd3TmpBuffer[0] = 2;			  // 设备从地址Pw_EquipmentNo
+			Txd3TmpBuffer[1] = 3;			  // 功能码			ZCL 2019.3.12 这里比较特殊，用的Txd2Buffer
+			if (w_ZhouShanProtocol_bit7 == 0) // =0，发送32个字；=1，发送40个字
+				Txd3TmpBuffer[2] = 32 * 2;	  // Rcv2Buffer[5]=字数 　
+			else
+				Txd3TmpBuffer[2] = 40 * 2; // Rcv2Buffer[5]=字数 　
+
+			p_wRead = sw_ParLst; // 舟山协议，从这个地址读取数据
+			p_bMove = Txd3TmpBuffer;
+
+			for (k = 0; k < Txd3TmpBuffer[2] / 2; k++) // 填充查询内容
+			{
+				m = *(p_wRead + 339 + k);
+				*(p_bMove + 3 + k * 2) = m >> 8;
+				*(p_bMove + 3 + k * 2 + 1) = m;
+			}
+			Lw_Txd3ChkSum = CRC16(Txd3TmpBuffer, Txd3TmpBuffer[2] + 3);
+			Txd3TmpBuffer[Txd3TmpBuffer[2] + 3] = Lw_Txd3ChkSum >> 8; // /256
+			Txd3TmpBuffer[Txd3TmpBuffer[2] + 4] = Lw_Txd3ChkSum;	  // 低位字节
+			Cw_Txd3TmpMax = Txd3TmpBuffer[2] + 5;
+			//----------------------------------------------
+
+			//---------------YLS 2023.09.09 ----------------
+			Txd3TmpBuffer2[0] = 2;			  // 设备从地址Pw_EquipmentNo
+			Txd3TmpBuffer2[1] = 3;			  // 功能码			ZCL 2019.3.12 这里比较特殊，用的Txd2Buffer
+			if (w_ZhouShanProtocol_bit7 == 0) // =0，发送32个字；=1，发送40个字
+				Txd3TmpBuffer2[2] = 32 * 2;	  // Rcv2Buffer[5]=字数 　
+			else
+				Txd3TmpBuffer2[2] = 40 * 2; // Rcv2Buffer[5]=字数 　
+
+			p_wRead = sw_ParLst; // 舟山协议，从这个地址读取数据
+			p_bMove = Txd3TmpBuffer2;
+
+			for (k = 0; k < Txd3TmpBuffer2[2] / 2; k++) // 填充查询内容
+			{
+				m = *(p_wRead + 339 + k);
+				*(p_bMove + 3 + k * 2) = m >> 8;
+				*(p_bMove + 3 + k * 2 + 1) = m;
+			}
+			Lw_Txd3ChkSum = CRC16(Txd3TmpBuffer2, Txd3TmpBuffer2[2] + 3);
+			Txd3TmpBuffer2[Txd3TmpBuffer2[2] + 3] = Lw_Txd3ChkSum >> 8; // /256
+			Txd3TmpBuffer2[Txd3TmpBuffer2[2] + 4] = Lw_Txd3ChkSum;		// 低位字节
+			Cw_Txd3TmpMax2 = Txd3TmpBuffer2[2] + 5;
+			//----------------------------------------------
+			B_Com3Cmd03 = 0;
+			Cw_Txd3 = 0;
+
+			// ZCL 2019.3.12 新添指令，比较重要！模仿透传中，串口收到数据，转发到GPRS网络
+			// B_GprsDataReturn = 1; // 模仿透传中，串口收到数据，转发到GPRS网络
+
+			// ZCL 2019.3.14 Cw_BakRcv2 换成 Cw_Txd3TmpMax
+			if (GprsPar[EnDDP0Base + SendDataReturnNo]) //=1，DDP协议；=0，透明协议
+			{
+				// 根据不同的通道号，返回不同的数据
+				// 先发送命令
+				At_Gprs_Tx_Fill_Cmd(16); // YLS 2023.09.09
+			}
+			else
+			{
+				// 先发送命令
+				At_Gprs_Tx_Fill_Cmd(0); // YLS 2023.09.09
+			}
+		}
+
+		// 2014.12.11 	因为遇到收不到AT_3EOk_Flag标志，所以加上延时后，重发数据
+		else if (S_GprsDataSend == 2 && C_BetweenSendDataReturn > 300)
+		{
+			S_GprsDataSend = 1; // ZCL1
+			C_BetweenSendDataReturn = 0;
+		}
+
+		// 2.数据发送
+		else if (S_GprsDataSend == 2 && AT_3EOk_Flag) //
+		{
+			S_GprsDataSend = 3;
+			AT_3EOk_Flag = 0;
+			Cw_Txd3Max = 0; // 2014.12.8
+			// 2012.10.4 加入DDP协议和透明协议的选择
+			//=1，DDP协议
+			if (GprsPar[EnDDP0Base + SendDataReturnNo]) //=1，DDP协议；=0，透明协议
+			{
+				Gprs_TX_Fill(GPRS_ZhenTou, 16); // DDP协议
+				// 修改DTU身份识别码
+				for (t = 0; t < 11; t++)
+					Txd3Buffer[4 + t] = GprsPar[DtuNoBase + t];
+
+				// 2012.10.10 加入TCP协议和UDP协议的区别
+				// UDP: 7B 09 00 10 31 33 39 31 32 33 34 35 36 37 38 7B 61 62 63
+				// TCP: 7B 09 00 13 31 33 39 31 32 33 34 35 36 37 38 61 62 63 7B
+
+				// TCP
+				if (GprsPar[LinkTCPUDP0Base + SendDataReturnNo]) //=1，TCP协议；=0，UDP协议
+				{
+					Cw_Txd3Max = 15; // 修改Cw_Txd3Max值从16改成15！ 2012.10.10
+
+					// ZCL 2019.3.12 加限制，透传是原先程序；新主机GPRS模式是新程序，填充数据不一样。
+					if (F_GprsTransToCom)
+					{
+						Gprs_TX_Fill(Rcv2Buffer, Cw_BakRcv2); // 填充数据
+						Gprs_TX_Byte(0x7B);
+						// 2012.10.10 修改发送长度（使用TCP协议，则长度为所有发送数据总长度！ 周成磊）
+						Txd3Buffer[3] = 16 + Cw_BakRcv2;
+					}
+
+					// ZCL 2019.3.12
+					else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
+					{
+						// 根据不同的通道号，返回不同的数据
+						Gprs_TX_Fill_Data(); // YLS 2023.09.09
+
+						Gprs_TX_Byte(0x7B);
+						// 2012.10.10 修改发送长度（使用TCP协议，则长度为所有发送数据总长度！ 周成磊）
+						Txd3Buffer[3] = 16 + Cw_Txd3TmpMax;
+					}
+				}
+
+				// UDP时
+				else
+				{
+					// Gprs_TX_Fill(Rcv2Buffer,Cw_BakRcv2);		//填充数据
+					// ZCL 2019.3.12 加限制，透传是原先程序；新主机GPRS模式是新程序，填充数据不一样。
+					if (F_GprsTransToCom)
+						Gprs_TX_Fill(Rcv2Buffer, Cw_BakRcv2); // 填充数据
+
+					else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
+					{
+						// 根据不同的通道号，返回不同的数据
+						Gprs_TX_Fill_Data(); // YLS 2023.09.09
+					}
+				}
+			}
+			//=0，透明协议
+			else // 透明协议不用加头，也不分TCP,UDP区别
+			{
+				// Gprs_TX_Fill(Rcv2Buffer,Cw_BakRcv2);		//不分TCP,UDP区别
+
+				// ZCL 2019.3.12 加限制，透传是原先程序；新主机GPRS模式是新程序，填充数据不一样。
+				if (F_GprsTransToCom)
+					Gprs_TX_Fill(Rcv2Buffer, Cw_BakRcv2); // 填充数据
+
+				else if (F_GprsMasterNotToCom || F_GprsMasterToCom)
+				{
+					// 根据不同的通道号，返回不同的数据
+					Gprs_TX_Fill_Data(); // YLS 2023.09.09
+				}
+			}
+
+			// 2.数据发送
+			Gprs_TX_Start();
+			// if (GprsPar[ConsoleInfoTypeBase])
+			// 	u1_printf("SEND DATA:%s", Txd3Buffer);
+			//
+			C_BetweenSendDataReturn = 0;
+		}
+		// 2014.12.11 	因为遇到收不到AT_ComOk_Flag标志，所以加上延时后，重发数据
+		else if (S_GprsDataSend == 3 && C_BetweenSendDataReturn > 1000)
+		{
+			S_GprsDataSend = 1; // ZCL2
+			C_BetweenSendDataReturn = 0;
+		}
+		// 3. 收到正确OK标志，发送结束
+		else if (S_GprsDataSend == 3 && AT_CIPSEND_Flag && C_BetweenSendDataReturn > 100) // 发送完必须加延时，很重要 YLS 2023.03.07
+		{
+			//				AT_ComOk_Flag = 0;
+			AT_CIPSEND_Flag = 0;
+			//
+			S_GprsDataSend = 0;
+			C_GprsDataSend = 0;
+			// SendDataReturnNo++;				//指向下一个发送序号	 移到后面 2014.11.27
+			// 清除不用发送心跳包标志
+			C_HeartDelay[SendDataReturnNo] = 0;
+			B_HeartSendAsk[SendDataReturnNo] = 0;
+			// 移到这里 2014.11.27
+			SendDataReturnNo++; // 指向下一个发送序号
+			C_BetweenSendDataReturn = 0;
+		}
+
+		// 4. 没有正确发送，延时
+		if (C_GprsDataSend > 1) // S	YLS 2023.03.23
+		{
+			S_GprsDataSend = 0;
+			C_GprsDataSend = 0;
+			SendDataReturnNo++; // 指向下一个发送序号
+			C_BetweenSendDataReturn = 0;
+		}
+	}
+	// 没有连接的链路，跳过，转向下一个连接
+	else
+	{
+		S_GprsDataSend = 0;
+		C_GprsDataSend = 0;
+		SendDataReturnNo++; // 指向下一个发送序号
+		C_BetweenSendDataReturn = 0;
+	}
+}
+
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

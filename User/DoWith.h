@@ -40,6 +40,7 @@ void Test(void); 		//输出
 void	ADC_DMA_Init(void); 
 
 u32 FtoU32(u16 w1,u16 w2); 						//四字节的浮点数据转换为乘了10的长整形数据
+void DowithJKData_HD(void);
 #endif /* __DOWITH_H */
 
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

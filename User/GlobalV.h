@@ -12,6 +12,7 @@
 #define __GLOBALV_H
 
 #include "GlobalConst.h"
+#include "HeDaProtocol.h"
 
 // (定义变量)
 u8 SoftClock[9]; // 辅助时钟
@@ -36,6 +37,8 @@ u16 w_ParLst[1000]; // 参数字列表区 只读		//1区访问
 
 u16 Pw_dspParLst[100]; // DSP参数字列表区 设定 2015.7.1			//2区访问
 u16 w_dspParLst[150];  // DSP参数字列表区 只读 2015.7.1	ZCL 2018.9.21 数量100太少			//3区访问
+
+u16 sw_ParLst[500]; // 和达用户监控数据区 YLS 2025.08.22
 
 u8 B_ModPar;
 u16 Lw_Reg;
@@ -157,4 +160,9 @@ u16 Count_Save1_No8_VVVF_Comm; // 8#泵变频器通讯计数器1
 u16 Count_Save2_No8_VVVF_Comm; // 8#泵变频器通讯计数器2
 
 char ota_url[500];
+
+// 根据"HeDaProtocol.h"，在此处定义和达协议数据区变量，便于下一步传输数据，声明HeDaPacket
+HeDaPacket g_HeDaPacket = {0};
+uint16_t SendNo_Order = 0; // 发送流水序号 每次发送数据时加1，溢出后清零
+
 #endif /* __GLOBALV_H */

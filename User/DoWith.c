@@ -1797,3 +1797,287 @@ u32 FtoU32(u16 w1, u16 w2) // 四字节的浮点数据转换为乘了10的长整形数据
 	tmpL = (u32)(aa.f * 10.0); // 1位小数点
 	return tmpL;
 }
+
+// 根据"HeDaProtocol.h"，填充和达通讯协议数据区，便于下一步发送数据
+void DowithJKData_HD(void)
+{
+	uint8_t tmp1;
+	// 1、起始标志
+	g_HeDaPacket.hd_StartFlag = 0xf88f;
+
+	// 2、设备ID 8个字节 BCD码
+	// 假设DTU号存放在GprsPar[DtuNoBase]起始的11字节
+	// 取后8位，转换为BCD，存入hd_DeviceID[8]
+	uint8_t dtu_ascii[12] = {0}; // 11位DTU号+结束符
+	uint8_t bcd[8] = {0};
+	int i, j = 0, k = 0;
+
+	// 拷贝DTU号后8位（假设为ASCII码）
+	for (i = 3; i < 11; i++)
+	{
+		dtu_ascii[j++] = GprsPar[DtuNoBase + i];
+	}
+	dtu_ascii[j] = 0;
+
+	// 转换为BCD码
+	for (i = 0; i < 8; i++)
+	{
+		uint8_t high = dtu_ascii[i * 2] ? dtu_ascii[i * 2] - '0' : 0;
+		uint8_t low = dtu_ascii[i * 2 + 1] ? dtu_ascii[i * 2 + 1] - '0' : 0;
+		bcd[i] = (high << 4) | (low & 0x0F);
+	}
+
+	// 存入协议结构体
+	for (k = 0; k < 8; k++)
+	{
+		g_HeDaPacket.hd_DeviceID[k] = bcd[k];
+	}
+
+	// 3、厂商代码 2个字节 三利：0x1001
+	g_HeDaPacket.hd_CompanyCode = 0x1001; // 0x1001-三利
+	g_HeDaPacket.hd_ProtocolVersion = 1;  // 协议版本号，1-表示V1.0版本
+
+	// 4、协议版本， 1个字节 当前版本为1
+	g_HeDaPacket.hd_ProtocolVersion = 0x01; // 协议版本， 1个字节 当前版本为1
+
+	// 5、时间戳 BCD码 6个字节 YYMMDDHHMMSS
+	tmp1 = (w_Lora1PtL_YearMonth & 0xff00) >> 8;
+	if (tmp1 <= 0x99)
+		g_HeDaPacket.hd_TimeStamp[0] = tmp1; // 时间戳，年
+	else
+		g_HeDaPacket.hd_TimeStamp[0] = 0x00; // 时间戳，年
+
+	tmp1 = w_Lora1PtL_YearMonth & 0xff;
+	if (tmp1 <= 0x12)
+		g_HeDaPacket.hd_TimeStamp[1] = tmp1; // 时间戳，月
+	else
+		g_HeDaPacket.hd_TimeStamp[1] = 0x01; // 时间戳，月
+
+	tmp1 = (w_Lora1PtH_DayHour & 0xff00) >> 8;
+	if (tmp1 <= 0x31)
+		g_HeDaPacket.hd_TimeStamp[2] = tmp1; // 时间戳，日
+	else
+		g_HeDaPacket.hd_TimeStamp[2] = 0x01; // 时间戳，日
+
+	tmp1 = w_Lora1PtH_DayHour & 0xff;
+	if (tmp1 <= 0x23)
+		g_HeDaPacket.hd_TimeStamp[3] = tmp1; // 时间戳，时
+	else
+		g_HeDaPacket.hd_TimeStamp[3] = 0x00; // 时间戳，时
+
+	tmp1 = (w_Lora1Time_MinSec & 0xff00) >> 8;
+	if (tmp1 <= 0x59)
+		g_HeDaPacket.hd_TimeStamp[4] = tmp1; // 时间戳，分
+	else
+		g_HeDaPacket.hd_TimeStamp[4] = 0x00; // 时间戳，分
+
+	tmp1 = w_Lora1Time_MinSec & 0xff;
+	if (tmp1 <= 0x59)
+		g_HeDaPacket.hd_TimeStamp[5] = tmp1; // 时间戳，秒
+	else
+		g_HeDaPacket.hd_TimeStamp[5] = 0x00; // 时间戳，秒
+
+	// 6、命令类型  1个字节 数据上报功能码为02
+	g_HeDaPacket.hd_CmdType = 0x02; // 命令类型  1个字节 数据上报功能码为02
+
+	// 7、发送流水序号 2个字节 每次发送数据时加1，溢出后清零
+	g_HeDaPacket.hd_SendOrder = SendNo_Order; // 发送流水序号 2个字节 每次发送数据时加1，溢出后清零
+
+	// 8、加密方式 1个字节，=0不加密
+	g_HeDaPacket.hd_EncryptionMethod = 0; // 加密方式 1个字节，=0不加密
+
+	// 9、秘钥版本号 2个字节
+	g_HeDaPacket.hd_KeyVersion = 0; // 秘钥版本号
+
+	// 10、压缩方式 1个字节 =0不压缩
+	g_HeDaPacket.hd_CompressionMethod = 0; // 压缩方式 1个字节 =0不压缩}
+
+	// 11、11、保留字段 2个字节
+	g_HeDaPacket.hd_ReserveData = 0; // 保留字段 2个字节
+
+	// 13、数据长度 2个字节
+	g_HeDaPacket.hd_Data_Len = HEDA_DATA_LEN_ALL; // 数据长度 2个字节
+
+	// 12、数据域长度 2个字节 hd_DataDomain_Len=hd_Data_Len+2
+	g_HeDaPacket.hd_DataDomain_Len = g_HeDaPacket.hd_Data_Len + 2; // 数据域长度 2个字节 hd_Data_Len=hd_Data_Len+2
+
+	// 14、数据区 279个字节
+	g_HeDaPacket.Tlv1_tag = 0x03;				// TLV1标签 1个字节
+	g_HeDaPacket.Tlv1_len = HEDA_DATA_LEN_TLV1; // TLV1长度 2个字节
+	g_HeDaPacket.Tlv1_nested[0].tag = 0x03;
+	g_HeDaPacket.Tlv1_nested[0].len = 0x0001;
+	g_HeDaPacket.Tlv1_nested[0].DataLength = 1;
+	g_HeDaPacket.Tlv1_nested[0].value[0] = w_GprsCSQ; // 信号强度
+
+	// 15、第二个TLV（数据区）
+	g_HeDaPacket.Tlv2_tag = 0x07;				// TLV2标签 RTU周期数据 1个字节
+	g_HeDaPacket.Tlv2_len = HEDA_DATA_LEN_TLV2; // TLV2长度 2个字节
+	for (uint8_t i = 0; i < 6; i++)
+	{
+		g_HeDaPacket.Tlv2_hd_DataStartTimeStamp[i] = g_HeDaPacket.hd_TimeStamp[i]; // 数据时间
+	}
+	g_HeDaPacket.Tlv2_DataLog_Interval = 1;
+	g_HeDaPacket.Tlv2_DataLog_IntervalValue = 1; // 数据采集间隔，单位秒
+	g_HeDaPacket.Tlv2_DataLog_Num = 0x01;		 // 采集数据个数，1组
+
+	// TLV2数据域 258个字节
+	for (uint8_t j = 0; j < 36; j++)
+	{
+		g_HeDaPacket.items[j].DataType = 0x01;		// 数据标签，P（脉冲量）
+		g_HeDaPacket.items[j].ChannelIndex = j + 1; // 通道，即P1-P36（P1-P18为1#泵，）
+		g_HeDaPacket.items[j].DataLength = 0x04;	// 数据长度4
+	}
+
+	for (uint8_t k = 36; k < 44; k++)
+	{
+		g_HeDaPacket.items[k].DataType = 0x04;		 // 数据标签，Q（Q通道）
+		g_HeDaPacket.items[k].ChannelIndex = k - 35; // 通道，即Q1-Q8
+		g_HeDaPacket.items[k].DataLength = 0x02;	 // 数据长度2
+	}
+
+	// 1号泵
+	g_HeDaPacket.items[0].Data.PulseValue.PulseValue_u32 = w_Lora1EptH << 16 | w_Lora1EptL;					 // P1，合相有功电能
+	g_HeDaPacket.items[1].Data.PulseValue.PulseValue_u32 = w_Lora1ShunShiFlowH << 16 | w_Lora1ShunShiFlowL;	 // P2，瞬时流量
+	g_HeDaPacket.items[2].Data.PulseValue.PulseValue_u32 = w_Lora1SumFlowH << 16 | w_Lora1SumFlowL;			 // P3，累计流量
+	g_HeDaPacket.items[3].Data.PulseValue.PulseValue_u32 = w_Lora1YeWei1;									 // P4，进水水池液位1
+	g_HeDaPacket.items[4].Data.PulseValue.PulseValue_u32 = w_Lora1YeWei2;									 // P5，进水水池液位2
+	g_HeDaPacket.items[5].Data.PulseValue.PulseValue_u32 = w_Lora1OutP;										 // P6，出水压力
+	g_HeDaPacket.items[6].Data.PulseValue.PulseValue_u32 = w_Lora1SetVfFreq;								 // P7，目标频率
+	g_HeDaPacket.items[7].Data.PulseValue.PulseValue_u32 = w_Lora1VvvfFreq;									 // P8，实际频率
+	g_HeDaPacket.items[8].Data.PulseValue.PulseValue_u32 = w_Lora1OutVoltage;								 // P9，输出电压
+	g_HeDaPacket.items[9].Data.PulseValue.PulseValue_u32 = w_Lora1IaRms;									 // P10，电机电流
+	g_HeDaPacket.items[10].Data.PulseValue.PulseValue_u32 = w_Lora1UabRms;									 // P11，电机电压
+	g_HeDaPacket.items[11].Data.PulseValue.PulseValue_u32 = w_Lora1WenDu1;									 // P12，1#电机温度
+	g_HeDaPacket.items[12].Data.PulseValue.PulseValue_u32 = w_Lora1WenDu2;									 // P13，2#电机温度
+	g_HeDaPacket.items[13].Data.PulseValue.PulseValue_u32 = w_Lora1VF_Wendu;								 // P14，变频器温度
+	g_HeDaPacket.items[14].Data.PulseValue.PulseValue_u32 = w_Lora1VfErrCode;								 // P15，变频器故障代码
+	g_HeDaPacket.items[15].Data.PulseValue.PulseValue_u32 = w_Lora1PumpRunSecond;							 // P16，电机累计运行时间秒
+	g_HeDaPacket.items[16].Data.PulseValue.PulseValue_u32 = w_Lora1PumpRunMinute;							 // P17，电机累计运行时间分钟
+	g_HeDaPacket.items[17].Data.PulseValue.PulseValue_u32 = w_Lora1PumpRunHourH << 16 | w_Lora1PumpRunHourL; // P18，电机累计运行时间小时
+
+	// 2号泵
+	g_HeDaPacket.items[18].Data.PulseValue.PulseValue_u32 = w_Lora2EptH << 16 | w_Lora2EptL;				 // P19，合相有功电能
+	g_HeDaPacket.items[19].Data.PulseValue.PulseValue_u32 = w_Lora2ShunShiFlowH << 16 | w_Lora2ShunShiFlowL; // P20，瞬时流量
+	g_HeDaPacket.items[20].Data.PulseValue.PulseValue_u32 = w_Lora2SumFlowH << 16 | w_Lora2SumFlowL;		 // P21，累计流量
+	g_HeDaPacket.items[21].Data.PulseValue.PulseValue_u32 = w_Lora2YeWei2;									 // P22，进水水池液位1
+	g_HeDaPacket.items[22].Data.PulseValue.PulseValue_u32 = w_Lora2YeWei2;									 // P23，进水水池液位2
+	g_HeDaPacket.items[23].Data.PulseValue.PulseValue_u32 = w_Lora2OutP;									 // P24，出水压力
+	g_HeDaPacket.items[24].Data.PulseValue.PulseValue_u32 = w_Lora2SetVfFreq;								 // P25，目标频率
+	g_HeDaPacket.items[25].Data.PulseValue.PulseValue_u32 = w_Lora2VvvfFreq;								 // P26，实际频率
+	g_HeDaPacket.items[26].Data.PulseValue.PulseValue_u32 = w_Lora2OutVoltage;								 // P27，输出电压
+	g_HeDaPacket.items[27].Data.PulseValue.PulseValue_u32 = w_Lora2IaRms;									 // P28，电机电流
+	g_HeDaPacket.items[28].Data.PulseValue.PulseValue_u32 = w_Lora2UabRms;									 // P29，电机电压
+	g_HeDaPacket.items[29].Data.PulseValue.PulseValue_u32 = w_Lora2WenDu2;									 // P30，1#电机温度
+	g_HeDaPacket.items[30].Data.PulseValue.PulseValue_u32 = w_Lora2WenDu2;									 // P31，2#电机温度
+	g_HeDaPacket.items[31].Data.PulseValue.PulseValue_u32 = w_Lora2VF_Wendu;								 // P32，变频器温度
+	g_HeDaPacket.items[32].Data.PulseValue.PulseValue_u32 = w_Lora2VfErrCode;								 // P33，变频器故障代码
+	g_HeDaPacket.items[33].Data.PulseValue.PulseValue_u32 = w_Lora2PumpRunSecond;							 // P34，电机累计运行时间秒
+	g_HeDaPacket.items[34].Data.PulseValue.PulseValue_u32 = w_Lora2PumpRunMinute;							 // P35，电机累计运行时间分钟
+	g_HeDaPacket.items[35].Data.PulseValue.PulseValue_u32 = w_Lora2PumpRunHourH << 16 | w_Lora2PumpRunHourL; // P36，电机累计运行时间小时
+
+	// 1#泵 Q通道
+	g_HeDaPacket.items[36].Data.QValue.value = w_Lora1Flag1Unit;	// Q1，标志位1
+	g_HeDaPacket.items[37].Data.QValue.value = w_Lora1Flag2Unit;	// Q2，标志位2
+	g_HeDaPacket.items[38].Data.QValue.value = w_Lora1Flag3Unit;	// Q3，标志位3
+	g_HeDaPacket.items[39].Data.QValue.value = w_Lora1Pump12Status; // Q4，标志位4
+
+	// 2#泵 Q通道
+	g_HeDaPacket.items[40].Data.QValue.value = w_Lora2Flag1Unit;	// Q5，标志位1
+	g_HeDaPacket.items[41].Data.QValue.value = w_Lora2Flag2Unit;	// Q6，标志位2
+	g_HeDaPacket.items[42].Data.QValue.value = w_Lora2Flag3Unit;	// Q7，标志位3
+	g_HeDaPacket.items[43].Data.QValue.value = w_Lora2Pump12Status; // Q8，标志位4
+
+	g_HeDaPacket.hd_Sum = 0;
+
+	g_HeDaPacket.hd_EndFlag = 0x16; // 结束标志;
+
+} // 根据"HeDaProtocol.h"，计算和达通讯协议数据区的校验码
+
+// 这个函数将g_HeDaPacket填充为完整的和达协议数据，填充到Txd3TmpBuffer3中
+void FillJKData_HD(void)
+{
+	uint16_t offset = 0;
+
+	// 1. 填充固定头部数据（从起始标志到数据域长度）
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_StartFlag, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	memcpy(&Txd3TmpBuffer3[offset], g_HeDaPacket.hd_DeviceID, 8);
+	offset += 8;
+
+	// 继续填充其他固定头部字段...
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_CompanyCode, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.hd_ProtocolVersion;
+	memcpy(&Txd3TmpBuffer3[offset], g_HeDaPacket.hd_TimeStamp, 8);
+	offset += 6;
+
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.hd_CmdType;
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_SendOrder, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.hd_EncryptionMethod;
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_KeyVersion, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.hd_CompressionMethod;
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_ReserveData, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_DataDomain_Len, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.hd_Data_Len, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
+	// 2. 填充TLV1数据
+	memcpy(&Txd3TmpBuffer3[offset++], &g_HeDaPacket.Tlv1_tag, sizeof(uint8_t));
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.Tlv1_len, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+	// memcpy(&Txd3TmpBuffer3[offset], g_HeDaPacket.Tlv1_nested, sizeof(HeDaTLV) * HEDA_TLV1_NESTED_NUM);
+	// offset += sizeof(HeDaTLV) * HEDA_TLV1_NESTED_NUM;
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.Tlv1_nested[0].value[0];
+
+	// 3. 填充TLV2数据
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.Tlv2_tag, sizeof(uint8_t));
+	offset += sizeof(uint8_t);
+	memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.Tlv2_len, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+	memcpy(&Txd3TmpBuffer3[offset], g_HeDaPacket.Tlv2_hd_DataStartTimeStamp, 6);
+	offset += 6;
+
+	// 4. 填充数据区（items数组）
+	// memcpy(&Txd3TmpBuffer3[offset], g_HeDaPacket.items, sizeof(HeDaTLV2_Item) * HEDA_TLV2_ITEM_NUM);
+	// offset += sizeof(HeDaTLV2_Item) * HEDA_TLV2_ITEM_NUM;
+	// 分别处理脉冲量（P1-P36，4字节）和Q通道值（Q1-Q8，2字节）
+	for (int i = 0; i < HEDA_TLV2_ITEM_NUM; i++)
+	{
+		// 填充DataType和ChannelIndex
+		Txd3TmpBuffer3[offset++] = g_HeDaPacket.items[i].DataType;
+		Txd3TmpBuffer3[offset++] = g_HeDaPacket.items[i].ChannelIndex;
+
+		if (i < 36)
+		{
+			// P1-P36为脉冲量，4字节
+			memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.items[i].Data.PulseValue.PulseValue_u32, 4);
+			offset += 4;
+		}
+		else
+		{
+			// Q1-Q8为Q通道值，2字节
+			memcpy(&Txd3TmpBuffer3[offset], &g_HeDaPacket.items[i].Data.QValue.value, 2);
+			offset += 2;
+		}
+	}
+	// 5. 填充校验和和结束标志
+	g_HeDaPacket.hd_Sum = 0;
+	for (uint8_t i = 0; i < offset; i++)
+	{
+		g_HeDaPacket.hd_Sum += Txd3TmpBuffer3[i];
+	}
+
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.hd_Sum;
+	Txd3TmpBuffer3[offset++] = g_HeDaPacket.hd_EndFlag;
+	Cw_Txd3TmpMax3 = offset; // 发送数据区长度
+}
